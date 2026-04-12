@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent } from 'lucide-react';
+import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass } from 'lucide-react';
 import { indicatorsData } from '../data';
 
 const iconMap = {
@@ -30,6 +30,14 @@ export default function Layout() {
           >
             <LayoutDashboard size={18} />
             Dashboard
+          </NavLink>
+
+          <NavLink 
+            to="/assets" 
+            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          >
+            <Compass size={18} />
+            Explorador de Activos
           </NavLink>
           
           <div style={{ marginTop: '20px', marginBottom: '8px', paddingLeft: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>

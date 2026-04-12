@@ -1,17 +1,9 @@
 import React from 'react';
-import { indicatorsData } from '../data';
 
-export default function RegimeMap() {
-  const liquidezInd = indicatorsData.find(i => i.id === 'liquidez');
-  const vixInd = indicatorsData.find(i => i.id === 'vix');
-
-  // subscore es de 0 a 100, mayor es más favorable.
-  // Liquidez X: 0 = baja, 100 = alta
-  const x = liquidezInd?.subscore || 50; 
-  
-  // Volatilidad Y: 0 = baja volatilidad, 100 = alta volatilidad
-  // El VIX subscore mayor = favorable = baja volatilidad. Por ende invertimos para sacar la "volatilidad" bruta.
-  const y = 100 - (vixInd?.subscore || 50);
+export default function RegimeMap({ x = 50, y = 50, regimeText = "" }) {
+  // Aseguramos que el punto quede dentro del mapa 0-100%
+  const safeX = Math.max(0, Math.min(100, x));
+  const safeY = Math.max(0, Math.min(100, y));
 
   return (
     <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -33,8 +25,8 @@ export default function RegimeMap() {
           <div 
             className="position-marker"
             style={{ 
-              left: `${x}%`,
-              bottom: `${y}%`
+              left: `${safeX}%`,
+              bottom: `${safeY}%`
             }}
           >
              <div className="marker-pulse"></div>
@@ -46,6 +38,12 @@ export default function RegimeMap() {
         <span>Baja Liquidez</span>
         <span>Alta Liquidez</span>
       </div>
+
+      {regimeText && (
+        <div style={{ marginTop: '16px', textAlign: 'center', fontWeight: '600', color: 'var(--brand-primary)' }}>
+          DB: {regimeText}
+        </div>
+      )}
     </div>
   );
 }

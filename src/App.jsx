@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import IndicatorDetail from './pages/IndicatorDetail';
+import AssetExplorer from './pages/AssetExplorer';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
+          <Route path="assets" element={<AssetExplorer />} />
           <Route path="indicator/:id" element={<IndicatorDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
