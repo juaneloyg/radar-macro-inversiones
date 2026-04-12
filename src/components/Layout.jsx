@@ -1,6 +1,6 @@
-import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass, Flame, LineChart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass, Flame, LineChart, Menu, X } from 'lucide-react';
 import { indicatorsData } from '../data';
 
 const iconMap = {
@@ -15,9 +15,31 @@ const iconMap = {
 };
 
 export default function Layout() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Cerrar el menú automáticamente cuando cambia la ruta (navegación)
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
+
   return (
-    <div className="app-container">
-      <aside className="sidebar">
+    <div className={`app-container ${isMenuOpen ? 'menu-open' : ''}`}>
+      {/* Mobile Header Bar */}
+      <header className="mobile-header">
+        <div className="sidebar-title">
+          <Activity color="var(--brand-primary)" />
+          Radar Macro
+        </div>
+        <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </header>
+
+      {/* Overlay for mobile menu */}
+      {isMenuOpen && <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>}
+
+      <aside className={`sidebar ${isMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-title">
             <Activity color="var(--brand-primary)" />

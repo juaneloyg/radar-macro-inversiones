@@ -89,42 +89,36 @@ export default function AssetExplorer() {
       </div>
 
       {/* Split Layout */}
-      <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start' }}>
+      <div className="asset-explorer-split">
         
         {/* Left List Grid */}
-        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+        <div className="asset-list-container">
           {filteredAssets.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', gridColumn: '1 / -1', padding: '40px', textAlign: 'center' }}>
+            <div className="no-results">
               No se encontraron activos para esta búsqueda.
             </div>
           ) : (
             filteredAssets.map(asset => (
               <div 
                 key={asset.id} 
-                className="card"
+                className={`asset-list-card card ${selectedAssetId === asset.id ? 'selected' : ''}`}
                 onClick={() => setSelectedAssetId(asset.id)}
-                style={{ 
-                  cursor: 'pointer', 
-                  padding: '20px',
-                  borderColor: selectedAssetId === asset.id ? 'var(--brand-primary)' : 'var(--border-light)',
-                  boxShadow: selectedAssetId === asset.id ? '0 0 0 1px var(--brand-primary)' : 'var(--shadow-sm)'
-                }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div className="asset-card-header">
                   <div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>{asset.name}</h3>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{asset.ticker} &bull; {asset.category}</span>
+                    <h3 className="asset-name">{asset.name}</h3>
+                    <span className="asset-meta">{asset.ticker} &bull; {asset.category}</span>
                   </div>
-                  <div style={{ background: 'var(--surface-highlight)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
+                  <div className="asset-price-tag">
                     {asset.price}
                   </div>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '16px' }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '4px' }}>
+                <div className="asset-card-footer">
+                  <div className="asset-sensitivity-tag">
                     {asset.macroSensitivity}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 700, color: getTrendColor(asset.trendType) }}>
+                  <div className={`asset-trend-val ${asset.trendType}`}>
                     {getTrendIcon(asset.trendType)} {asset.trend}
                   </div>
                 </div>
@@ -135,50 +129,50 @@ export default function AssetExplorer() {
 
         {/* Right Detail Panel */}
         {selectedAsset && (
-          <div className="card" style={{ width: '400px', position: 'sticky', top: '24px', padding: '32px' }}>
-            <div style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid var(--border-light)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h2 style={{ fontSize: '1.75rem', fontWeight: 800 }}>{selectedAsset.ticker}</h2>
-                <span className="status-badge favorable" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-primary)', border: 'none' }}>
+          <div className="asset-detail-panel card">
+            <div className="detail-panel-header">
+              <div className="detail-title-row">
+                <h2 className="detail-ticker">{selectedAsset.ticker}</h2>
+                <span className="detail-cat-badge">
                   {selectedAsset.category}
                 </span>
               </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>{selectedAsset.name}</p>
+              <p className="detail-asset-name">{selectedAsset.name}</p>
             </div>
 
-            <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)', fontSize: '1.1rem' }}>Matriz de Sensibilidad</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h4 className="detail-section-subtitle">Matriz de Sensibilidad</h4>
+            <div className="sensitivity-rows">
+              <div className="sensitivity-row">
+                <span className="sensitivity-label">
                   <Percent size={16} /> Tipos de Interés
                 </span>
-                <span style={{ fontWeight: 600 }}>{selectedAsset.intRateRelation}</span>
+                <span className="sensitivity-value">{selectedAsset.intRateRelation}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="sensitivity-row">
+                <span className="sensitivity-label">
                   <Activity size={16} /> VIX (Volatilidad)
                 </span>
-                <span style={{ fontWeight: 600 }}>{selectedAsset.vixRelation}</span>
+                <span className="sensitivity-value">{selectedAsset.vixRelation}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="sensitivity-row">
+                <span className="sensitivity-label">
                   <DollarSign size={16} /> Dólar (DXY)
                 </span>
-                <span style={{ fontWeight: 600 }}>{selectedAsset.usdRelation}</span>
+                <span className="sensitivity-value">{selectedAsset.usdRelation}</span>
               </div>
             </div>
 
-            <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)', fontSize: '1.1rem' }}>Comportamiento Esperado</h4>
-            <div style={{ background: 'var(--surface-highlight)', padding: '16px', borderRadius: '12px', marginBottom: '32px' }}>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+            <h4 className="detail-section-subtitle">Comportamiento Esperado</h4>
+            <div className="behavior-box">
+              <p className="behavior-text">
                 {selectedAsset.expectedBehavior}
               </p>
             </div>
 
-            <h4 style={{ marginBottom: '16px', color: 'var(--text-primary)', fontSize: '1.1rem' }}>Etiquetas Macro</h4>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <h4 className="detail-section-subtitle">Etiquetas Macro</h4>
+            <div className="detail-tags">
               {selectedAsset.tags.map(tag => (
-                <span key={tag} style={{ background: 'var(--bg-color)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                <span key={tag} className="detail-tag">
                   {tag}
                 </span>
               ))}
