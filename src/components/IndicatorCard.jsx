@@ -48,7 +48,7 @@ export default function IndicatorCard({ indicator }) {
       
       <div className="indicator-chart-small">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={indicator.history}>
+          <LineChart data={indicator.history.slice(-30)}>
             <Line 
               type="monotone" 
               dataKey="value" 

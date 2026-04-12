@@ -9,13 +9,28 @@ export const weights = {
   dolar: 10,    // 10%
 };
 
-// Funciones helpers para generar historico ficticio
-const generateTrendData = (start, points, trend = 0, volatility = 1) => {
+// Funciones helpers para generar historico ficticio a 25 años
+const generateTrendData = (start, years, trend = 0, volatility = 1) => {
+  const points = years * 365;
   let current = start;
-  return Array.from({ length: points }).map((_, i) => {
+  const data = [];
+  const today = new Date();
+  
+  for (let i = points; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
     current = current + (Math.random() - 0.5) * volatility + trend;
-    return { day: `Día ${i + 1}`, value: Number(current.toFixed(2)) };
-  });
+    
+    // Evitar valores negativos si no tiene sentido o ajustarlo natural
+    if(current < 0.1 && volatility > 0.5) current = 0.5;
+
+    data.push({ 
+      date: d.toISOString().split('T')[0], 
+      timestamp: d.getTime(),
+      value: Number(current.toFixed(2)) 
+    });
+  }
+  return data;
 };
 
 export const indicatorsData = [
@@ -30,7 +45,7 @@ export const indicatorsData = [
     subscore: 85, // Sobre 100
     weight: weights.liquidez,
     description: "Medida aproximada de la liquidez monetaria global de los bancos centrales. Niveles altos suelen ser favorables para activos de riesgo.",
-    history: generateTrendData(100, 30, 0.1, 1),
+    history: generateTrendData(50, 25, 0.005, 1.5),
   },
   {
     id: "vix",
@@ -43,7 +58,7 @@ export const indicatorsData = [
     subscore: 75,
     weight: weights.vix,
     description: "Mide la expectativa de volatilidad del mercado de opciones del S&P 500. Valores por debajo de 20 indican un entorno de bajo estrés.",
-    history: generateTrendData(20, 30, -0.2, 1.5),
+    history: generateTrendData(20, 25, -0.001, 1),
   },
   {
     id: "credito",
@@ -56,7 +71,7 @@ export const indicatorsData = [
     subscore: 60,
     weight: weights.credito,
     description: "Diferencial de rendimiento entre bonos corporativos de alto riesgo y bonos del tesoro sin riesgo. Spreads bajos indican confianza crediticia.",
-    history: generateTrendData(3.4, 30, 0.01, 0.05),
+    history: generateTrendData(5, 25, -0.0002, 0.1),
   },
   {
     id: "tipos",
@@ -69,7 +84,7 @@ export const indicatorsData = [
     subscore: 50,
     weight: weights.tipos,
     description: "Rendimiento del bono estadounidense a 10 años. Unos tipos altos encarecen el coste del capital, limitando a veces la valoración de acciones de crecimiento.",
-    history: generateTrendData(4.1, 30, 0.02, 0.03),
+    history: generateTrendData(3.5, 25, 0.0001, 0.05),
   },
   {
     id: "curva",
@@ -82,7 +97,7 @@ export const indicatorsData = [
     subscore: 30,
     weight: weights.curva,
     description: "La diferencia de rendimiento entre el bono a 10 años y el bono a 2 años. Una curva invertida (valores negativos) ha sido históricamente un indicador de recesión.",
-    history: generateTrendData(-0.4, 30, 0.01, 0.03),
+    history: generateTrendData(1, 25, -0.0002, 0.05),
   },
   {
     id: "dolar",
@@ -95,7 +110,7 @@ export const indicatorsData = [
     subscore: 55,
     weight: weights.dolar,
     description: "Medida del valor del dólar frente a una cesta de monedas extranjeras. Un dólar fuerte puede presionar las ganancias de multinacionales de EEUU.",
-    history: generateTrendData(103, 30, 0.05, 0.3),
+    history: generateTrendData(90, 25, 0.001, 0.5),
   }
 ];
 

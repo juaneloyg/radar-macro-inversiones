@@ -1,13 +1,28 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Minus, Info } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { indicatorsData, getStatusFromScore } from '../data';
 
+const TIME_RANGES = [
+  { label: '1S', days: 7, desc: '1 semana' },
+  { label: '1M', days: 30, desc: '1 mes' },
+  { label: '3M', days: 90, desc: '3 meses' },
+  { label: '6M', days: 180, desc: '6 meses' },
+  { label: 'YTD', days: 'YTD', desc: 'Year-to-Date' },
+  { label: '1A', days: 365, desc: '1 año' },
+  { label: '2A', days: 730, desc: '2 años' },
+  { label: '3A', days: 1095, desc: '3 años' },
+  { label: '5A', days: 1825, desc: '5 años' },
+  { label: '10A', days: 3650, desc: '10 años' },
+  { label: '25A', days: 9125, desc: '25 años' },
+];
+
 export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); // Default 1M
+  
   const indicator = useMemo(() => indicatorsData.find(ind => ind.id === id), [id]);
 
   if (!indicator) {
@@ -50,6 +65,32 @@ export default function IndicatorDetail() {
     'neutral': 'var(--status-neutral-dim)',
     'defensive': 'var(--status-defensive-dim)'
   }[indicator.status] || 'var(--brand-primary-dim)';
+
+  // Process data for the chart: slicing and downsampling
+  const chartData = useMemo(() => {
+    if (!indicator.history) return [];
+    
+    let targetDays = activeRange.days;
+    if (targetDays === 'YTD') {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      targetDays = Math.max(1, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
+    }
+    
+    const totalData = indicator.history.length;
+    const itemsToTake = Math.min(targetDays, totalData);
+    
+    let sliced = indicator.history.slice(-itemsToTake);
+    
+    // Downsample to max 300 points to keep animations and SVG rendering super fast
+    const MAX_POINTS = 300;
+    if (sliced.length > MAX_POINTS) {
+      const step = Math.ceil(sliced.length / MAX_POINTS);
+      sliced = sliced.filter((_, i) => i % step === 0);
+    }
+    
+    return sliced;
+  }, [indicator.history, activeRange]);
 
   return (
     <div>
@@ -104,9 +145,35 @@ export default function IndicatorDetail() {
       </div>
 
       <div className="detail-chart-container">
-        <h3 style={{ marginBottom: '24px', fontSize: '1.1rem' }}>Evolución Histórica (30 Días)</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={indicator.history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Evolución Histórica ({activeRange.desc})</h3>
+          
+          <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-color)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            {TIME_RANGES.map((range) => (
+              <button
+                key={range.label}
+                onClick={() => setActiveRange(range)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: activeRange.label === range.label ? 'var(--brand-primary)' : 'transparent',
+                  color: activeRange.label === range.label ? '#ffffff' : 'var(--text-secondary)',
+                  transition: 'all var(--transition-speed)'
+                }}
+                title={range.desc}
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={350}>
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={chartFillColor} stopOpacity={0.8}/>
@@ -114,11 +181,12 @@ export default function IndicatorDetail() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-            <XAxis dataKey="day" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+            <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
+            <YAxis domain={['auto', 'auto']} stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} width={80} padding={{ top: 20, bottom: 20 }} />
             <Tooltip 
               contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
-              itemStyle={{ color: 'var(--text-primary)' }}
+              itemStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
+              labelStyle={{ color: 'var(--text-secondary)', marginBottom: '8px' }}
             />
             <Area 
               type="monotone" 
@@ -127,6 +195,7 @@ export default function IndicatorDetail() {
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorValue)" 
+              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
