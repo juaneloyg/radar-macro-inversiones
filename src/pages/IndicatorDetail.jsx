@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Minus, Info } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -18,284 +18,240 @@ const TIME_RANGES = [
   { label: '10A', days: 3650, desc: '10 años (Máx)' },
 ];
 
+const safeNumber = (val, fallback = 0) => {
+  const n = parseFloat(val);
+  return isNaN(n) ? fallback : n;
+};
+
 export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); // Default 1M
-  const [dbData, setDbData] = useState(null);
-  const [fullHistory, setFullHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
   
-  const baseIndicator = useMemo(() => indicatorsData.find(ind => ind.id === id), [id]);
+  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); 
+  const [dbSnap, setDbSnap] = useState(null);
+  const [dbHistory, setDbHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorStatus, setErrorStatus] = useState(null);
 
-  React.useEffect(() => {
-    async function fetchData() {
-      // Si no hay id, no hacemos nada
+  const baseIndicator = useMemo(() => {
+    return indicatorsData.find(ind => ind.id === id) || null;
+  }, [id]);
+
+  useEffect(() => {
+    async function loadData() {
       if (!id) return;
-      
       setLoading(true);
-      setFetchError(false);
-      
+      setErrorStatus(null);
+
       try {
-        // 1. Snapshot actual (valor más reciente)
-        const { data: snapData, error: snapErr } = await supabase
+        const { data: snap, error: snapErr } = await supabase
           .from('macro_snapshots')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(1);
         
         if (snapErr) throw snapErr;
-        if (snapData && snapData[0]) setDbData(snapData[0]);
+        if (snap && snap[0]) setDbSnap(snap[0]);
 
-        // 2. Historial. Limitamos a los últimos 3000 puntos (aprox 12 años de días hábiles)
-        // Pedir 25 años (9000+ filas) en un solo componente puede colapsar el navegador en Vercel.
-        // 3000 es un compromiso excelente entre profundidad y rendimiento.
         const { data: hist, error: histErr } = await supabase
-           .from('macro_history')
-           .select('date, value')
-           .eq('indicator_id', id)
-           .order('date', { ascending: false })
-           .limit(3000);
-           
+          .from('macro_history')
+          .select('date, value')
+          .eq('indicator_id', id)
+          .order('date', { ascending: false })
+          .limit(2500);
+
         if (histErr) throw histErr;
         
         if (hist) {
-          // El gráfico necesita orden cronológico (antiguo -> nuevo)
-          setFullHistory([...hist].reverse());
+          setDbHistory([...hist].reverse());
         }
+
       } catch (err) {
-        console.error('Error fetching indicator data:', err);
-        setFetchError(true);
+        console.error("Critical Fetch Error:", err);
+        setErrorStatus("No se pudieron cargar los datos de la base de datos.");
       } finally {
         setLoading(false);
       }
     }
-    
-    fetchData();
+
+    loadData();
   }, [id]);
 
   const indicator = useMemo(() => {
     if (!baseIndicator) return null;
-    if (!dbData) return baseIndicator;
-    let realValue = baseIndicator.value;
-    let subscore = baseIndicator.subscore;
+    if (!dbSnap) return baseIndicator;
 
-    // Mapeo dinámico de campos de Supabase a indicadores
-    const mapping = {
-      'liquidez': { val: dbData.liquidity, score: dbData.liquidity },
-      'vix': { val: dbData.vix, score: 100 - dbData.vix },
-      'credito': { val: dbData.credit_spreads, score: 100 - dbData.credit_spreads },
-      'tipos': { val: dbData.interest_rates, score: dbData.interest_rates },
-      'curva': { val: dbData.yield_curve, score: dbData.yield_curve },
-      'dolar': { val: dbData.dxy, score: 100 - dbData.dxy },
-      'inflacion': { val: dbData.inflation, score: 100 - dbData.inflation },
-      'crecimiento': { val: dbData.growth, score: dbData.growth }
+    let realVal = baseIndicator.value;
+    let realScore = baseIndicator.subscore;
+
+    const colMap = {
+      'liquidez': { v: dbSnap.liquidity, s: dbSnap.liquidity },
+      'vix': { v: dbSnap.vix, s: 100 - dbSnap.vix },
+      'credito': { v: dbSnap.credit_spreads, s: 100 - dbSnap.credit_spreads },
+      'tipos': { v: dbSnap.interest_rates, s: dbSnap.interest_rates },
+      'curva': { v: dbSnap.yield_curve, s: dbSnap.yield_curve },
+      'dolar': { v: dbSnap.dxy, s: 100 - dbSnap.dxy },
+      'inflacion': { v: dbSnap.inflation, s: 100 - dbSnap.inflation },
+      'crecimiento': { v: dbSnap.growth, s: dbSnap.growth }
     };
 
-    if (mapping[id]) {
-      realValue = mapping[id].val;
-      subscore = mapping[id].score;
+    if (colMap[id]) {
+      realVal = colMap[id].v;
+      realScore = safeNumber(colMap[id].s);
     }
 
-    return { ...baseIndicator, value: realValue, subscore };
-  }, [baseIndicator, dbData, id]);
+    return {
+      ...baseIndicator,
+      value: realVal,
+      subscore: realScore
+    };
+  }, [baseIndicator, dbSnap, id]);
 
-  if (!indicator) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--text-primary)' }}>
-        <h2>Indicador no encontrado</h2>
-        <button className="back-btn" onClick={() => navigate('/')} style={{ marginTop: '20px', width: 'auto', padding: '0 20px', borderRadius: '20px' }}>
-          Volver al Dashboard
-        </button>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '100px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
-        <div className="loading-spinner"></div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Cargando datos reales de mercado...</div>
-      </div>
-    );
-  }
-
-  if (fetchError) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--status-defensive)' }}>
-        <h3>Error al conectar con la base de datos</h3>
-        <p>No se han podido recuperar los datos históricos.</p>
-        <button className="back-btn" onClick={() => window.location.reload()} style={{ marginTop: '20px', width: 'auto', padding: '0 20px' }}>
-          Reintentar
-        </button>
-      </div>
-    );
-  }
-
-  const statusInfo = getStatusFromScore(indicator.subscore);
-
-  const getChangeColor = () => {
-    switch (indicator.changeType) {
-      case 'up': return indicator.id === 'vix' ? 'var(--status-defensive)' : 'var(--status-favorable)';
-      case 'down': return indicator.id === 'vix' ? 'var(--status-favorable)' : 'var(--status-defensive)';
-      default: return 'var(--text-secondary)';
-    }
-  };
-
-  const IconChange = () => {
-    switch (indicator.changeType) {
-      case 'up': return <ArrowUpRight size={20} color={getChangeColor()} />;
-      case 'down': return <ArrowDownRight size={20} color={getChangeColor()} />;
-      default: return <Minus size={20} color={getChangeColor()} />;
-    }
-  };
-
-  const chartColor = {
-    'favorable': 'var(--status-favorable)',
-    'neutral': 'var(--status-neutral)',
-    'defensive': 'var(--status-defensive)'
-  }[indicator.status] || 'var(--brand-primary)';
-
-  const chartFillColor = {
-    'favorable': 'var(--status-favorable-dim)',
-    'neutral': 'var(--status-neutral-dim)',
-    'defensive': 'var(--status-defensive-dim)'
-  }[indicator.status] || 'var(--brand-primary-dim)';
-
-  // Process data for the chart: slicing and downsampling
   const chartData = useMemo(() => {
-    if (!fullHistory || fullHistory.length === 0) return [];
-    
+    if (!dbHistory || dbHistory.length === 0) return [];
+
     let targetDays = activeRange.days;
     if (targetDays === 'YTD') {
       const now = new Date();
       const start = new Date(now.getFullYear(), 0, 1);
       targetDays = Math.max(1, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
     }
+
+    const sliced = dbHistory.slice(-targetDays);
     
-    const totalData = fullHistory.length;
-    const itemsToTake = Math.min(targetDays, totalData);
-    
-    let sliced = fullHistory.slice(-itemsToTake);
-    
-    // Downsample to max 300 points to keep animations and SVG rendering super fast
-    const MAX_POINTS = 300;
-    if (sliced.length > MAX_POINTS) {
-      const step = Math.ceil(sliced.length / MAX_POINTS);
-      sliced = sliced.filter((_, i) => i % step === 0);
+    const MAX = 300;
+    if (sliced.length > MAX) {
+      const step = Math.ceil(sliced.length / MAX);
+      return sliced.filter((_, i) => i % step === 0);
     }
-    
     return sliced;
-  }, [fullHistory, activeRange]);
+  }, [dbHistory, activeRange]);
+
+  if (!baseIndicator) {
+    return (
+      <div className="status-container">
+        <h2>Indicador no compatible</h2>
+        <button className="back-btn" onClick={() => navigate('/')}>Volver</button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="status-container" style={{ marginTop: '100px' }}>
+        <div className="loading-spinner"></div>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '16px' }}>Sincronizando con Supabase...</p>
+      </div>
+    );
+  }
+
+  if (errorStatus) {
+    return (
+      <div className="status-container" style={{ color: 'var(--status-defensive)' }}>
+        <h3>Error de sistema</h3>
+        <p>{errorStatus}</p>
+        <button className="back-btn" onClick={() => window.location.reload()}>Reintentar</button>
+      </div>
+    );
+  }
+
+  const currentStatus = getStatusFromScore(indicator.subscore);
+  
+  const getChangeColor = () => {
+    if (indicator.changeType === 'up') return indicator.id === 'vix' ? 'var(--status-defensive)' : 'var(--status-favorable)';
+    if (indicator.changeType === 'down') return indicator.id === 'vix' ? 'var(--status-favorable)' : 'var(--status-defensive)';
+    return 'var(--text-secondary)';
+  };
 
   return (
-    <div>
+    <div className="detail-view">
       <div className="detail-header">
-        <button className="back-btn" onClick={() => navigate('/')} title="Volver al Dashboard">
+        <button className="back-btn" onClick={() => navigate('/')} title="Cerrar">
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="dashboard-title" style={{ marginBottom: 0 }}>{indicator.detailName}</h1>
+          <h1 className="dashboard-title">{indicator.detailName}</h1>
           <p className="dashboard-subtitle">{indicator.name}</p>
         </div>
       </div>
 
       <div className="detail-stats">
         <div className="stat-box">
-          <div className="stat-label">Valor Actual</div>
+          <div className="stat-label">Valor Real</div>
           <div className="stat-value">{indicator.value}</div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Variación 24h</div>
+          <div className="stat-label">Derivado 24h</div>
           <div className="stat-value" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <IconChange /> {indicator.change}
+            {indicator.changeType === 'up' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+            {indicator.change}
           </div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Estado</div>
+          <div className="stat-label">Interpretación</div>
           <div className="stat-value">
-            <span className={`status-badge ${indicator.status}`} style={{ fontSize: '1rem', padding: '6px 16px' }}>
-              {statusInfo.text}
+            <span className={`status-badge ${currentStatus.class}`}>
+              {currentStatus.text}
             </span>
           </div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Subscore & Peso</div>
-          <div className="stat-value">{indicator.subscore}/100</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Aporta {(indicator.subscore * indicator.weight / 100).toFixed(1)} pts ({indicator.weight}%)
-          </div>
+          <div className="stat-label">Subscore vs Peso</div>
+          <div className="stat-value">{Math.round(indicator.subscore)}/100</div>
+          <div className="stat-subtext">Ponderación: {indicator.weight}%</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '24px', marginBottom: '32px' }}>
-        <div className="card" style={{ flex: 1 }}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '1.1rem' }}>
-            <Info size={18} color="var(--brand-primary)" />
-            Acerca del Indicador
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {indicator.description}
-          </p>
-        </div>
+      <div className="card description-card">
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Info size={18} color="var(--brand-primary)" />
+          Fundamentos del Indicador
+        </h3>
+        <p>{indicator.description}</p>
       </div>
 
       <div className="detail-chart-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Evolución Histórica ({activeRange.desc})</h3>
-          
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-color)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-            {TIME_RANGES.map((range) => (
+        <div className="chart-controls">
+          <h3 className="chart-title">Evolución ({activeRange.desc})</h3>
+          <div className="range-picker">
+            {TIME_RANGES.map((r) => (
               <button
-                key={range.label}
-                onClick={() => setActiveRange(range)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  backgroundColor: activeRange.label === range.label ? 'var(--brand-primary)' : 'transparent',
-                  color: activeRange.label === range.label ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all var(--transition-speed)'
-                }}
-                title={range.desc}
+                key={r.label}
+                className={`range-btn ${activeRange.label === r.label ? 'active' : ''}`}
+                onClick={() => setActiveRange(r)}
               >
-                {range.label}
+                {r.label}
               </button>
             ))}
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={350}>
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={chartFillColor} stopOpacity={0.8}/>
-                <stop offset="95%" stopColor={chartFillColor} stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-            <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-            <YAxis domain={['auto', 'auto']} stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} width={80} padding={{ top: 20, bottom: 20 }} />
-            <Tooltip 
-              contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
-              itemStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
-              labelStyle={{ color: 'var(--text-secondary)', marginBottom: '8px' }}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="value" 
-              stroke={chartColor} 
-              strokeWidth={3}
-              fillOpacity={1} 
-              fill="url(#colorValue)" 
-              isAnimationActive={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        <div style={{ width: '100%', height: 350 }}>
+          <ResponsiveContainer>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="gradientColor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+              <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} minTickGap={40} />
+              <YAxis domain={['auto', 'auto']} stroke="var(--text-muted)" fontSize={11} width={40} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="value" 
+                stroke={`var(--status-${currentStatus.class})`}
+                strokeWidth={3}
+                fill="url(#gradientColor)"
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
