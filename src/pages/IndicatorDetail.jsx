@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Minus, Info } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { indicatorsData, getStatusFromScore } from '../data';
+import { supabase } from '../lib/supabaseClient';
 
 const TIME_RANGES = [
   { label: '1S', days: 7, desc: '1 semana' },
@@ -22,8 +23,62 @@ export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); // Default 1M
+  const [dbData, setDbData] = useState(null);
+  const [fullHistory, setFullHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  const indicator = useMemo(() => indicatorsData.find(ind => ind.id === id), [id]);
+  const baseIndicator = useMemo(() => indicatorsData.find(ind => ind.id === id), [id]);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      
+      // 1. Snapshot actual
+      const { data: snapData } = await supabase.from('macro_snapshots').select('*').order('created_at', { ascending: false }).limit(1);
+      if (snapData && snapData[0]) setDbData(snapData[0]);
+
+      // 2. Historial de este indicador (max 9500 dias / 25 yrs)
+      let allRows = [];
+      let from = 0;
+      let step = 1000;
+      while (allRows.length < 9500) {
+         const { data: hist } = await supabase
+           .from('macro_history')
+           .select('date, value')
+           .eq('indicator_id', id)
+           .order('date', { ascending: false })
+           .range(from, from + step - 1);
+           
+         if (!hist || hist.length === 0) break;
+         allRows = allRows.concat(hist);
+         if (hist.length < step) break;
+         from += step;
+      }
+      
+      allRows.reverse();
+      setFullHistory(allRows);
+      setLoading(false);
+    }
+    
+    if (id) fetchData();
+  }, [id]);
+
+  const indicator = useMemo(() => {
+    if (!baseIndicator || !dbData) return baseIndicator;
+    let realValue = baseIndicator.value;
+    let subscore = baseIndicator.subscore;
+
+    if (id === 'liquidez') { realValue = dbData.liquidity; subscore = dbData.liquidity; }
+    if (id === 'vix') { realValue = dbData.vix; subscore = 100 - dbData.vix; }
+    if (id === 'credito') { realValue = dbData.credit_spreads; subscore = 100 - dbData.credit_spreads; }
+    if (id === 'tipos') { realValue = dbData.interest_rates; subscore = dbData.interest_rates; }
+    if (id === 'curva') { realValue = dbData.yield_curve; subscore = dbData.yield_curve; }
+    if (id === 'dolar') { realValue = dbData.dxy; subscore = 100 - dbData.dxy; }
+    if (id === 'inflacion') { realValue = dbData.inflation; subscore = 100 - dbData.inflation; }
+    if (id === 'crecimiento') { realValue = dbData.growth; subscore = dbData.growth; }
+
+    return { ...baseIndicator, value: realValue, subscore };
+  }, [baseIndicator, dbData, id]);
 
   if (!indicator) {
     return (
@@ -34,6 +89,10 @@ export default function IndicatorDetail() {
         </button>
       </div>
     );
+  }
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--text-secondary)' }}>Cargando datos históricos de mercado...</div>;
   }
 
   const statusInfo = getStatusFromScore(indicator.subscore);
@@ -68,7 +127,7 @@ export default function IndicatorDetail() {
 
   // Process data for the chart: slicing and downsampling
   const chartData = useMemo(() => {
-    if (!indicator.history) return [];
+    if (!fullHistory || fullHistory.length === 0) return [];
     
     let targetDays = activeRange.days;
     if (targetDays === 'YTD') {
@@ -77,10 +136,10 @@ export default function IndicatorDetail() {
       targetDays = Math.max(1, Math.floor((now - start) / (1000 * 60 * 60 * 24)));
     }
     
-    const totalData = indicator.history.length;
+    const totalData = fullHistory.length;
     const itemsToTake = Math.min(targetDays, totalData);
     
-    let sliced = indicator.history.slice(-itemsToTake);
+    let sliced = fullHistory.slice(-itemsToTake);
     
     // Downsample to max 300 points to keep animations and SVG rendering super fast
     const MAX_POINTS = 300;
@@ -90,7 +149,7 @@ export default function IndicatorDetail() {
     }
     
     return sliced;
-  }, [indicator.history, activeRange]);
+  }, [fullHistory, activeRange]);
 
   return (
     <div>

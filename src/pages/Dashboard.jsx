@@ -102,6 +102,7 @@ Busca acciones globales infravaloradas injustamente según criterios value, incl
 export default function Dashboard() {
   const navigate = useNavigate();
   const [macroData, setMacroData] = useState(null);
+  const [macroHistory, setMacroHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
@@ -118,10 +119,29 @@ export default function Dashboard() {
         .limit(1);
 
       if (error) {
-        console.error('Error cargando datos:', error);
+        console.error('Error cargando datos snapshot:', error);
         setErrorMsg(error.message || 'Error de conexión a la base de datos');
       } else {
         setMacroData(data?.[0] ?? null);
+      }
+
+      // Descargamos los últimos 800 puntos del historial (unos 100 días para cada uno de los 8 indicadores)
+      const { data: histData, error: histError } = await supabase
+        .from('macro_history')
+        .select('date, indicator_id, value')
+        .order('date', { ascending: false })
+        .limit(800);
+
+      if (histData) {
+        const grouped = {};
+        // Invertimos para que el gráfico vaya de antiguo a nuevo
+        histData.reverse().forEach(row => {
+          if (!grouped[row.indicator_id]) grouped[row.indicator_id] = [];
+          grouped[row.indicator_id].push({ date: row.date, value: row.value });
+        });
+        setMacroHistory(grouped);
+      } else if (histError) {
+        console.error('Error cargando historial:', histError);
       }
 
       setLoading(false);
@@ -275,7 +295,9 @@ export default function Dashboard() {
       subscore = 100 - derived.dxy;
     }
 
-    return { ...ind, value: realValue, subscore };
+    const hist = macroHistory?.[ind.id] || ind.history;
+
+    return { ...ind, value: realValue, subscore, history: hist };
   });
 
   const liquidezInd = realIndicators.find((i) => i.id === 'liquidez');
