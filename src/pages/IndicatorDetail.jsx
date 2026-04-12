@@ -21,6 +21,7 @@ const TIME_RANGES = [
 export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); // Default 1M
   const [dbData, setDbData] = useState(null);
   const [fullHistory, setFullHistory] = useState([]);
   const [loading, setLoading] = useState(true);
