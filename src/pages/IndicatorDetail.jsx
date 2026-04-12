@@ -15,74 +15,94 @@ const TIME_RANGES = [
   { label: '2A', days: 730, desc: '2 años' },
   { label: '3A', days: 1095, desc: '3 años' },
   { label: '5A', days: 1825, desc: '5 años' },
-  { label: '10A', days: 3650, desc: '10 años' },
-  { label: '25A', days: 9125, desc: '25 años' },
+  { label: '10A', days: 3650, desc: '10 años (Máx)' },
 ];
 
 export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); // Default 1M
   const [dbData, setDbData] = useState(null);
   const [fullHistory, setFullHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   
   const baseIndicator = useMemo(() => indicatorsData.find(ind => ind.id === id), [id]);
 
   React.useEffect(() => {
     async function fetchData() {
-      setLoading(true);
+      // Si no hay id, no hacemos nada
+      if (!id) return;
       
-      // 1. Snapshot actual
-      const { data: snapData } = await supabase.from('macro_snapshots').select('*').order('created_at', { ascending: false }).limit(1);
-      if (snapData && snapData[0]) setDbData(snapData[0]);
+      setLoading(true);
+      setFetchError(false);
+      
+      try {
+        // 1. Snapshot actual (valor más reciente)
+        const { data: snapData, error: snapErr } = await supabase
+          .from('macro_snapshots')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (snapErr) throw snapErr;
+        if (snapData && snapData[0]) setDbData(snapData[0]);
 
-      // 2. Historial de este indicador (max 9500 dias / 25 yrs)
-      let allRows = [];
-      let from = 0;
-      let step = 1000;
-      while (allRows.length < 9500) {
-         const { data: hist } = await supabase
+        // 2. Historial. Limitamos a los últimos 3000 puntos (aprox 12 años de días hábiles)
+        // Pedir 25 años (9000+ filas) en un solo componente puede colapsar el navegador en Vercel.
+        // 3000 es un compromiso excelente entre profundidad y rendimiento.
+        const { data: hist, error: histErr } = await supabase
            .from('macro_history')
            .select('date, value')
            .eq('indicator_id', id)
            .order('date', { ascending: false })
-           .range(from, from + step - 1);
+           .limit(3000);
            
-         if (!hist || hist.length === 0) break;
-         allRows = allRows.concat(hist);
-         if (hist.length < step) break;
-         from += step;
+        if (histErr) throw histErr;
+        
+        if (hist) {
+          // El gráfico necesita orden cronológico (antiguo -> nuevo)
+          setFullHistory([...hist].reverse());
+        }
+      } catch (err) {
+        console.error('Error fetching indicator data:', err);
+        setFetchError(true);
+      } finally {
+        setLoading(false);
       }
-      
-      allRows.reverse();
-      setFullHistory(allRows);
-      setLoading(false);
     }
     
-    if (id) fetchData();
+    fetchData();
   }, [id]);
 
   const indicator = useMemo(() => {
-    if (!baseIndicator || !dbData) return baseIndicator;
+    if (!baseIndicator) return null;
+    if (!dbData) return baseIndicator;
     let realValue = baseIndicator.value;
     let subscore = baseIndicator.subscore;
 
-    if (id === 'liquidez') { realValue = dbData.liquidity; subscore = dbData.liquidity; }
-    if (id === 'vix') { realValue = dbData.vix; subscore = 100 - dbData.vix; }
-    if (id === 'credito') { realValue = dbData.credit_spreads; subscore = 100 - dbData.credit_spreads; }
-    if (id === 'tipos') { realValue = dbData.interest_rates; subscore = dbData.interest_rates; }
-    if (id === 'curva') { realValue = dbData.yield_curve; subscore = dbData.yield_curve; }
-    if (id === 'dolar') { realValue = dbData.dxy; subscore = 100 - dbData.dxy; }
-    if (id === 'inflacion') { realValue = dbData.inflation; subscore = 100 - dbData.inflation; }
-    if (id === 'crecimiento') { realValue = dbData.growth; subscore = dbData.growth; }
+    // Mapeo dinámico de campos de Supabase a indicadores
+    const mapping = {
+      'liquidez': { val: dbData.liquidity, score: dbData.liquidity },
+      'vix': { val: dbData.vix, score: 100 - dbData.vix },
+      'credito': { val: dbData.credit_spreads, score: 100 - dbData.credit_spreads },
+      'tipos': { val: dbData.interest_rates, score: dbData.interest_rates },
+      'curva': { val: dbData.yield_curve, score: dbData.yield_curve },
+      'dolar': { val: dbData.dxy, score: 100 - dbData.dxy },
+      'inflacion': { val: dbData.inflation, score: 100 - dbData.inflation },
+      'crecimiento': { val: dbData.growth, score: dbData.growth }
+    };
+
+    if (mapping[id]) {
+      realValue = mapping[id].val;
+      subscore = mapping[id].score;
+    }
 
     return { ...baseIndicator, value: realValue, subscore };
   }, [baseIndicator, dbData, id]);
 
   if (!indicator) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '60px' }}>
+      <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--text-primary)' }}>
         <h2>Indicador no encontrado</h2>
         <button className="back-btn" onClick={() => navigate('/')} style={{ marginTop: '20px', width: 'auto', padding: '0 20px', borderRadius: '20px' }}>
           Volver al Dashboard
@@ -92,7 +112,24 @@ export default function IndicatorDetail() {
   }
 
   if (loading) {
-    return <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--text-secondary)' }}>Cargando datos históricos de mercado...</div>;
+    return (
+      <div style={{ textAlign: 'center', marginTop: '100px', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+        <div className="loading-spinner"></div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Cargando datos reales de mercado...</div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--status-defensive)' }}>
+        <h3>Error al conectar con la base de datos</h3>
+        <p>No se han podido recuperar los datos históricos.</p>
+        <button className="back-btn" onClick={() => window.location.reload()} style={{ marginTop: '20px', width: 'auto', padding: '0 20px' }}>
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   const statusInfo = getStatusFromScore(indicator.subscore);
