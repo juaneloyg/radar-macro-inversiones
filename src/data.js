@@ -1,12 +1,14 @@
 // initial mock data and configuration para Radar Macro
 
 export const weights = {
-  liquidez: 30, // 30%
-  vix: 20,      // 20%
-  credito: 15,  // 15%
-  tipos: 15,    // 15%
-  curva: 10,    // 10%
-  dolar: 10,    // 10%
+  liquidez: 20, 
+  vix: 15,      
+  credito: 10,  
+  tipos: 10,    
+  curva: 10,    
+  dolar: 10,
+  inflacion: 10,
+  crecimiento: 15
 };
 
 // Funciones helpers para generar historico ficticio a 25 años
@@ -111,6 +113,32 @@ export const indicatorsData = [
     weight: weights.dolar,
     description: "Medida del valor del dólar frente a una cesta de monedas extranjeras. Un dólar fuerte puede presionar las ganancias de multinacionales de EEUU.",
     history: generateTrendData(90, 25, 0.001, 0.5),
+  },
+  {
+    id: "inflacion",
+    name: "Inflación / Expectativas",
+    detailName: "Métricas y Expectativas de Inflación",
+    value: "3.2%",
+    change: "+0.1%",
+    changeType: "up",
+    status: "defensive",
+    subscore: 40,
+    weight: weights.inflacion,
+    description: "Mide la presión de los precios y las expectativas a futuro. Una inflación alta presiona negativamente las valoraciones (múltiplos) y afecta agresivamente a activos de media y larga duración (bonos), además de forzar a bancos centrales a drenar liquidez.",
+    history: generateTrendData(3.5, 25, 0.001, 0.1),
+  },
+  {
+    id: "crecimiento",
+    name: "Crecimiento / Sorpresa Macro",
+    detailName: "Sorpresa Económica y Crecimiento Real",
+    value: "52.4",
+    change: "+1.2",
+    changeType: "up",
+    status: "favorable",
+    subscore: 55,
+    weight: weights.crecimiento,
+    description: "Evalúa la solidez del ciclo industrial y del consumidor frente al consenso. Un crecimiento robusto estabiliza la macro y beneficia a empresas pro-cíclicas, separando fases reales de expansión frente a meros rebotes de liquidez.",
+    history: generateTrendData(50, 25, 0.01, 2),
   }
 ];
 

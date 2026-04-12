@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass } from 'lucide-react';
+import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass, Flame, LineChart } from 'lucide-react';
 import { indicatorsData } from '../data';
 
 const iconMap = {
@@ -9,7 +9,9 @@ const iconMap = {
   credito: <TrendingUp size={18} />,
   tipos: <Percent size={18} />,
   curva: <BarChart3 size={18} />,
-  dolar: <DollarSign size={18} />
+  dolar: <DollarSign size={18} />,
+  inflacion: <Flame size={18} />,
+  crecimiento: <LineChart size={18} />
 };
 
 export default function Layout() {
