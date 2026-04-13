@@ -47,55 +47,59 @@ for indicator_id, ticker in yf_tickers.items():
     if not data.empty:
         # Tomar precio de cierre
         series = data['Close']
-        # Si es un MultiIndex (pasa en versiones nuevas de yfinance), aplanarlo
         if isinstance(series, pd.DataFrame):
             series = series.iloc[:, 0]
+        
+        # Eliminar zona horaria si existe para evitar problemas de merge
+        if series.index.tz is not None:
+            series.index = series.index.tz_localize(None)
+        
+        # Quedarse solo con la fecha (eliminar horas si las hay)
+        series.index = pd.to_datetime(series.index).normalize()
             
         series.name = indicator_id
         master_df = pd.merge(master_df, series, left_index=True, right_index=True, how='outer')
 
-# DESCARGA FRED ST. LOUIS (Vía CSV directo para máxima compatibilidad)
+# DESCARGA FRED ST. LOUIS (Simplificado)
+import time
 for indicator_id, ticker in fred_tickers.items():
     print(f"Descargando {indicator_id} desde FRED ({ticker})...")
+    time.sleep(1) # Pequeña pausa
     try:
         url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={ticker}"
-        import requests
-        import io
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-        response = requests.get(url, headers=headers, timeout=15)
-        response.raise_for_status()
-        data = pd.read_csv(io.StringIO(response.text), index_col=0, parse_dates=True, na_values=['.'])
+        # pd.read_csv maneja los headers y la conexión de forma nativa a menudo más estable
+        data = pd.read_csv(url, index_col=0, parse_dates=True, na_values=['.'])
         
         data = data.loc[start_date:end_date]
         if not data.empty:
-            series = data[ticker].astype(float)
+            series = data.iloc[:, 0].astype(float)
+            series.index = pd.to_datetime(series.index).normalize()
             series.name = indicator_id
             master_df = pd.merge(master_df, series, left_index=True, right_index=True, how='outer')
+            print(f"  OK: {len(series)} registros unidos.")
+        else:
+            print(f"  ADVERTENCIA: {indicator_id} no tiene datos.")
     except Exception as e:
-        print(f"Error descargando {ticker}: {e}")
+        print(f"  ERROR en {indicator_id}: {e}")
 
-# LIMPIEZA Y FORWARD-FILL (Para datos semanales/mensuales)
-print("Limpiando y unificando fechas (Fill Forward)...")
-master_df.index = pd.to_datetime(master_df.index)
+# LIMPIEZA Y FORWARD-FILL
+print("Limpiando y unificando fechas...")
 master_df = master_df.sort_index()
 
-# Rellenar "hacia adelante" los datos mensuales (crecimiento) y semanales (liquidez)
+# Rellenar huecos para que los datos semanales/mensuales de FRED se vean continuos
 master_df.ffill(inplace=True)
 
-# Borrar filas sin datos críticos
-master_df.dropna(subset=['tipos', 'dolar', 'vix'], inplace=True)
+# Muy importante: SOLO eliminar si el VIX es NaN (es nuestra ancla temporal)
+master_df.dropna(subset=['vix'], inplace=True)
 
 # --- INSERCIÓN EN SUPABASE ---
-print("Empezando inyección a Supabase...")
+print(f"Empezando inyección a Supabase (Total filas: {len(master_df)})...")
 
-# Formatear a lista de Json para Supabase
-# Como son 25 años (7000+ filas * 8 indicadores), agruparemos en lotes para no saturar Supabase.
 records = []
 for index, row in master_df.iterrows():
     day_str = index.strftime('%Y-%m-%d')
     for col in master_df.columns:
         val = row[col]
-        # Validar si es Nan para descartar
         if pd.isna(val):
             continue
         
@@ -105,10 +109,10 @@ for index, row in master_df.iterrows():
             "value": round(float(val), 4)
         })
 
-# Enviar a Supabase en paquetes de 1000
+# Enviar en paquetes de 1000
 batch_size = 1000
 total_records = len(records)
-print(f"Total de registros históricos a inyectar: {total_records}")
+print(f"Lotes listos. Total registros a subir: {total_records}")
 
 # Primero: Borramos el histórico anterior para tener una base limpia si ejecutas esto varias veces
 print("Limpiando tabla macro_history antigua...")

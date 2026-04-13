@@ -170,7 +170,7 @@ export default function IndicatorDetail() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="dashboard-title">{indicator.detailName}</h1>
+          <h1 className="dashboard-title" style={{ marginBottom: '4px' }}>{indicator.detailName}</h1>
           <p className="dashboard-subtitle">{indicator.name}</p>
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function IndicatorDetail() {
           </div>
         </div>
 
-        <div style={{ width: '100%', height: 350 }}>
+        <div style={{ width: '100%', height: 380 }}>
           <ResponsiveContainer>
             <AreaChart data={chartData}>
               <defs>
@@ -236,10 +236,25 @@ export default function IndicatorDetail() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-              <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} minTickGap={40} />
+              <XAxis 
+                dataKey="date" 
+                stroke="var(--text-muted)" 
+                fontSize={11} 
+                minTickGap={40}
+                tickFormatter={(val) => {
+                  try {
+                    const d = new Date(val);
+                    if (activeRange.days <= 31) return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                    if (activeRange.days <= 366) return d.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
+                    return d.toLocaleDateString('es-ES', { year: 'numeric' });
+                  } catch(e) { return val; }
+                }}
+              />
               <YAxis domain={['auto', 'auto']} stroke="var(--text-muted)" fontSize={11} width={40} />
               <Tooltip 
                 contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
+                itemStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px' }}
               />
               <Area 
                 type="monotone" 
@@ -252,6 +267,12 @@ export default function IndicatorDetail() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        
+        {chartData.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            No hay suficientes datos históricos para este periodo en Supabase.
+          </div>
+        )}
       </div>
     </div>
   );
