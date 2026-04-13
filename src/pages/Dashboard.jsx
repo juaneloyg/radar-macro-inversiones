@@ -376,7 +376,7 @@ export default function Dashboard() {
         </div>
 
         <div className="hero-right">
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '24px', color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: 'var(--text-primary)' }}>
             Desglose Ponderado
           </h3>
 
@@ -415,9 +415,9 @@ export default function Dashboard() {
                   style={{
                     display: 'flex',
                     alignItems: 'baseline',
-                    gap: '12px',
-                    marginTop: '12px',
-                    marginBottom: '8px'
+                    gap: '8px',
+                    marginTop: '8px',
+                    marginBottom: '4px'
                   }}
                 >
                   <span className="indicator-card-value">{liquidezInd.value}</span>
@@ -470,7 +470,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="modern-grid" style={{ marginTop: '32px' }}>
+      <div className="modern-grid" style={{ marginTop: '24px' }}>
         <div className="card" style={{ padding: '24px' }}>
           <h3 style={{ marginBottom: '18px' }}>Bloque Macro Adicional</h3>
 
@@ -551,7 +551,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div style={{ marginTop: '32px' }}>
+      <div style={{ marginTop: '24px' }}>
         <h2 className="section-title">
           <Activity size={24} color="var(--text-secondary)" />
           Indicadores Complementarios

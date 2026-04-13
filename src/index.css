@@ -100,7 +100,7 @@ a {
   background-color: var(--surface-color);
   border: 1px solid var(--border-light);
   border-radius: var(--border-radius);
-  padding: 28px;
+  padding: 20px; /* Reduced from 28px */
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-speed);
 }
@@ -126,7 +126,7 @@ a {
 }
 
 .sidebar-header {
-  padding: 40px 24px 32px 24px;
+  padding: 24px 20px 16px 20px; /* Reduced from 40px/24px/32px */
 }
 
 .sidebar-title {
@@ -148,13 +148,13 @@ a {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 10px 14px; /* Reduced from 14px 18px */
+  border-radius: 10px;
   color: var(--text-secondary);
   font-weight: 500;
   transition: all var(--transition-speed);
-  font-size: 1.05rem;
+  font-size: 0.95rem; /* Reduced from 1.05rem */
 }
 
 .nav-item:hover {
@@ -170,7 +170,7 @@ a {
 /* Main Content */
 .main-content {
   flex: 1;
-  padding: 40px 48px;
+  padding: 24px 32px; /* Reduced from 40px 48px */
   overflow-y: auto;
   transition: padding var(--transition-speed);
 }
@@ -217,23 +217,22 @@ a {
 }
 
 .dashboard-header-modern {
-  margin-bottom: 56px; /* Increased spacing */
+  margin-bottom: 32px; /* Reduced from 56px */
 }
 
 .dashboard-title {
-  font-size: 2.75rem;
+  font-size: 2.2rem; /* Reduced from 2.75rem */
   font-weight: 800;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   letter-spacing: -0.03em;
 }
 
 .dashboard-subtitle {
   color: var(--text-secondary);
-  font-size: 1.15rem;
+  font-size: 1rem; /* Reduced from 1.15rem */
   font-weight: 400;
 }
 
-/* Hero Score Panel */
 .score-hero {
   display: flex;
   background: linear-gradient(135deg, var(--surface-color), var(--surface-highlight));
@@ -241,13 +240,13 @@ a {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-hero);
-  margin-bottom: 72px; /* Increased whitespace below */
+  margin-bottom: 32px; /* Reduced from 72px */
   overflow: hidden;
 }
 
 .hero-left {
-  flex: 0 0 50%;
-  padding: 64px; /* Increased internal spacing */
+  flex: 0 0 45%;
+  padding: 32px 40px; /* Reduced from 64px */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -257,18 +256,18 @@ a {
 
 .hero-right {
   flex: 1;
-  padding: 64px; /* Increased internal spacing */
+  padding: 32px 40px; /* Reduced from 64px */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .score-giant-value {
-  font-size: 8.5rem;
+  font-size: 5.5rem; /* Reduced from 8.5rem */
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: -0.06em;
-  margin: 24px 0 32px 0; /* More balanced margins */
+  margin: 16px 0 20px 0; /* Reduced margins */
   text-shadow: 0 0 60px currentColor;
 }
 
@@ -277,17 +276,17 @@ a {
 .score-defensive { color: var(--status-defensive); opacity: 0.95; }
 
 .interpretation-text {
-  font-size: 1.25rem; /* Slightly larger */
+  font-size: 1.05rem; /* Reduced from 1.25rem */
   color: var(--text-secondary);
-  line-height: 1.6;
-  margin-top: 32px;
-  max-width: 90%;
+  line-height: 1.5;
+  margin-top: 24px;
+  max-width: 100%;
 }
 
 .breakdown-row {
   display: flex;
   justify-content: space-between;
-  padding: 16px 0; /* Looser rows */
+  padding: 10px 0; /* Reduced from 16px */
   border-bottom: 1px solid var(--border-light);
 }
 
@@ -296,35 +295,34 @@ a {
 }
 
 .section-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem; /* Reduced from 1.5rem */
   font-weight: 700;
-  margin-bottom: 32px;
+  margin-bottom: 20px; /* Reduced from 32px */
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   letter-spacing: -0.01em;
 }
 
 /* Middle Section Layout (Liquidez + Matrix) */
 .middle-section {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr; /* 60/40 approx ratio */
-  gap: 32px;
-  margin-bottom: 72px;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px; /* Reduced from 32px */
+  margin-bottom: 40px; /* Reduced from 72px */
 }
 
-/* Featured Card (Liquidez) */
 .featured-card {
   height: 100%;
   background: var(--surface-color);
   border: 1px solid var(--border-light); 
   border-radius: var(--border-radius-lg);
-  padding: 40px;
+  padding: 24px; /* Reduced from 40px */
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   display: flex;
-  gap: 48px;
+  gap: 32px; /* Reduced from 48px */
   transition: all var(--transition-speed);
 }
 
@@ -466,26 +464,25 @@ a {
   100% { transform: scale(3); opacity: 0; }
 }
 
-/* Base Indicator Cards (Grid) */
 .modern-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Reduced min-width from 320px */
+  gap: 20px; /* Reduced from 32px */
 }
 
 .indicator-card {
   display: flex;
   flex-direction: column;
-  padding: 32px;
-  border-radius: var(--border-radius-lg);
+  padding: 20px; /* Reduced from 32px */
+  border-radius: var(--border-radius);
 }
 
 .indicator-card .indicator-card-title {
-  font-size: 1.15rem;
+  font-size: 1rem; /* Reduced from 1.15rem */
 }
 
 .indicator-card .indicator-card-value {
-  font-size: 2.25rem;
+  font-size: 1.75rem; /* Reduced from 2.25rem */
 }
 
 .change-up { color: var(--status-favorable); }
@@ -493,9 +490,9 @@ a {
 .change-flat { color: var(--text-secondary); }
 
 .indicator-chart-small {
-  height: 90px;
+  height: 60px; /* Reduced from 90px */
   width: 100%;
-  margin-top: 32px;
+  margin-top: 16px; /* Reduced from 32px */
 }
 
 /* Asset Explorer Split Layout */

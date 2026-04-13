@@ -34,14 +34,14 @@ export default function IndicatorCard({ indicator }) {
 
   return (
     <div className="card indicator-card" onClick={() => navigate(`/indicator/${indicator.id}`)}>
-      <div className="indicator-card-header">
+      <div className="indicator-card-header" style={{ marginBottom: '12px' }}>
         <h3 className="indicator-card-title">{indicator.name}</h3>
         <span className="indicator-card-weight">Peso: {indicator.weight}%</span>
       </div>
       
-      <div className="indicator-card-value-container">
+      <div className="indicator-card-value-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span className="indicator-card-value">{indicator.value}</span>
-        <div className="indicator-card-change" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '2px' }}>
+        <div className="indicator-card-change" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.9rem', fontWeight: 600 }}>
           <IconChange /> {indicator.change}
         </div>
       </div>
