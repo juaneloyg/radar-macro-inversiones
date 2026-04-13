@@ -399,114 +399,8 @@ export default function Dashboard() {
       </div>
 
       <div className="middle-section">
-        {liquidezInd && (
-          <div>
-            <h2 className="section-title">
-              <Target size={24} color="var(--brand-primary)" />
-              Monitor Principal
-            </h2>
-
-            <div className="featured-card" onClick={() => navigate('/indicator/liquidez')}>
-              <div className="featured-info">
-                <span className="indicator-card-weight">Peso en Score: 20%</span>
-                <h3 className="indicator-card-title">{liquidezInd.name}</h3>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '8px',
-                    marginTop: '8px',
-                    marginBottom: '4px'
-                  }}
-                >
-                  <span className="indicator-card-value">{liquidezInd.value}</span>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    color: getChangeColor(liquidezInd),
-                    fontWeight: 600
-                  }}
-                >
-                  <IconChange ind={liquidezInd} /> {liquidezInd.change}
-                </div>
-              </div>
-
-              <div className="featured-chart">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={liquidezInd.history.slice(-90)}>
-                    <defs>
-                      <linearGradient id="colorLiquidez" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--brand-primary)" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="var(--brand-primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <YAxis domain={['auto', 'auto']} hide />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="var(--brand-primary)"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorLiquidez)"
-                      isAnimationActive={false}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div>
-          <h2 className="section-title" style={{ opacity: 0 }}>
-            .
-          </h2>
-          <RegimeMap x={visualX} y={visualY} regimeText={macroData.regime} />
-        </div>
-      </div>
-
-      <div className="modern-grid" style={{ marginTop: '24px' }}>
-        <div className="card" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '18px' }}>Bloque Macro Adicional</h3>
-
-          <div className="breakdown-row">
-            <div>
-              <div style={{ fontWeight: 600 }}>Inflación / Expectativas</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Condiciona tipos, múltiplos y duración
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 700 }}>{derived.inflation}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                {getInflationLabel(derived.inflation)}
-              </div>
-            </div>
-          </div>
-
-          <div className="breakdown-row" style={{ marginTop: '14px' }}>
-            <div>
-              <div style={{ fontWeight: 600 }}>Crecimiento / Sorpresa Macro</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Ayuda a separar nerviosismo de deterioro real
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 700 }}>{derived.growth}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                {getGrowthLabel(derived.growth)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center' }}>
+        <div className="card" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Sparkles size={20} color="var(--brand-primary)" />
               <h3 style={{ margin: 0 }}>Prompt para tu GEM</h3>
@@ -519,15 +413,16 @@ export default function Dashboard() {
                 background: 'transparent',
                 color: 'var(--text-primary)',
                 borderRadius: '10px',
-                padding: '10px 14px',
+                padding: '8px 12px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                fontSize: '0.9rem'
               }}
             >
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              {copied ? 'Copiado' : 'Copiar prompt'}
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? 'Copiado' : 'Copiar'}
             </button>
           </div>
 
@@ -536,29 +431,35 @@ export default function Dashboard() {
             readOnly
             style={{
               width: '100%',
-              minHeight: '260px',
-              marginTop: '18px',
+              flex: 1,
+              minHeight: '200px',
               background: 'rgba(255,255,255,0.03)',
               color: 'var(--text-primary)',
               border: '1px solid var(--border-color)',
-              borderRadius: '14px',
-              padding: '16px',
-              resize: 'vertical',
+              borderRadius: '12px',
+              padding: '14px',
+              resize: 'none',
               fontFamily: 'inherit',
-              lineHeight: 1.55
+              fontSize: '0.9rem',
+              lineHeight: 1.5
             }}
           />
+        </div>
+
+        <div>
+          <RegimeMap x={visualX} y={visualY} regimeText={macroData.regime} />
         </div>
       </div>
 
       <div style={{ marginTop: '24px' }}>
         <h2 className="section-title">
           <Activity size={24} color="var(--text-secondary)" />
-          Indicadores Complementarios
+          Indicadores del Sistema
         </h2>
 
         <div className="modern-grid">
-          {otherIndicators.map((ind) => (
+          {/* Liquidez Global ahora es el primero de la lista */}
+          {realIndicators.map((ind) => (
             <IndicatorCard key={ind.id} indicator={ind} />
           ))}
         </div>
