@@ -53,18 +53,28 @@ export default function IndicatorDetail() {
         if (snapErr) throw snapErr;
         if (snap && snap[0]) setDbSnap(snap[0]);
 
-        const { data: hist, error: histErr } = await supabase
-          .from('macro_history')
-          .select('date, value')
-          .eq('indicator_id', id)
-          .order('date', { ascending: false })
-          .limit(5000);
+        const ranges = [
+          [0, 999], [1000, 1999], [2000, 2999], [3000, 3999], [4000, 4999]
+        ];
 
-        if (histErr) throw histErr;
-        
-        if (hist) {
-          setDbHistory([...hist].reverse());
+        const results = await Promise.all(ranges.map(([from, to]) => 
+          supabase
+            .from('macro_history')
+            .select('date, value')
+            .eq('indicator_id', id)
+            .order('date', { ascending: false })
+            .range(from, to)
+        ));
+
+        let allHist = [];
+        for (const { data, error } of results) {
+          if (error) throw error;
+          if (data) allHist = [...allHist, ...data];
         }
+        
+        // Ordenar por fecha ascendente para Recharts
+        const sortedHist = allHist.sort((a, b) => new Date(a.date) - new Date(b.date));
+        setDbHistory(sortedHist);
 
       } catch (err) {
         console.error("Critical Fetch Error:", err);
