@@ -58,7 +58,7 @@ export default function IndicatorDetail() {
           .select('date, value')
           .eq('indicator_id', id)
           .order('date', { ascending: false })
-          .limit(2500);
+          .limit(5000);
 
         if (histErr) throw histErr;
         
