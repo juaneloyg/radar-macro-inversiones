@@ -72,7 +72,7 @@ export const indicatorsData = [
     status: "neutral",
     subscore: 60,
     weight: weights.credito,
-    description: "Diferencial de rendimiento entre bonos corporativos de alto riesgo y bonos del tesoro sin riesgo. Spreads bajos indican confianza crediticia.",
+    description: "Es lo que el mercado te cobra de mas por prestarle dinero a empresas con riesgo en lugar de a un gobierno seguro. Ejemplo sencillo: Si al gobierno le prestas al 3% y a una empresa arriesgada al 6%, ese +3% extra es el spread. Cómo leerlo: Bajo significa que todo va bien, no hay miedo. Alto significa cuidado, pueden venir problemas. En la práctica: Si sube mucho, el mercado está nervioso; si baja, hay confianza y ganas de asumir riesgo.",
     history: generateTrendData(5, 25, -0.0002, 0.1),
   },
   {
