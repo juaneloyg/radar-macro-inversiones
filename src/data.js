@@ -124,7 +124,7 @@ export const indicatorsData = [
     status: "defensive",
     subscore: 40,
     weight: weights.inflacion,
-    description: "Mide la presión de los precios y las expectativas a futuro. Una inflación alta presiona negativamente las valoraciones (múltiplos) y afecta agresivamente a activos de media y larga duración (bonos), además de forzar a bancos centrales a drenar liquidez.",
+    description: "Este indicador rastrea el aumento del coste de la vida y lo que el mercado espera que ocurra en el futuro. Una inflación alta es el peor enemigo del ahorrador, ya que erosiona el poder adquisitivo del dinero estático. Para los inversores, es clave porque obliga a los bancos centrales a subir tipos de interés para enfriar la economía, lo que suele castigar las valoraciones de las acciones. Por ejemplo, en un entorno de alta inflación, los bonos pierden valor rápidamente y las empresas con márgenes estrechos sufren para trasladar los costes al consumidor, afectando directamente a sus beneficios.",
     history: generateTrendData(3.5, 25, 0.001, 0.1),
   },
   {
