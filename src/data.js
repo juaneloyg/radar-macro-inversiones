@@ -157,27 +157,278 @@ export const getStatusFromScore = (score) => {
 };
 
 export const assetsData = [
-  // Acciones
-  { id: "asml", name: "ASML Holding N.V.", ticker: "ASML", category: "Acciones", price: "910.40", trend: "+1.5%", trendType: "up", macroSensitivity: "Tecnología / Semi", intRateRelation: "Inversa", vixRelation: "Inversa", usdRelation: "Mixta", expectedBehavior: "Sensible al ciclo global de semiconductores. Posee un fuerte poder de fijación de precios (monopolio estructural).", tags: ["Growth", "Europa"] },
-  { id: "msft", name: "Microsoft Corporation", ticker: "MSFT", category: "Acciones", price: "415.50", trend: "+0.8%", trendType: "up", macroSensitivity: "Calidad global e IA", intRateRelation: "Inversa moderada", vixRelation: "Inversa", usdRelation: "Inversa moderada", expectedBehavior: "Resiliente estructuralmente, sostenida por flujos constantes hacia IA e ingresos recurrentes de Cloud.", tags: ["Quality", "Gran Cap"] },
-  { id: "nvda", name: "NVIDIA Corporation", ticker: "NVDA", category: "Acciones", price: "880.20", trend: "+3.2%", trendType: "up", macroSensitivity: "Alta beta Growth", intRateRelation: "Inversa", vixRelation: "Fuertemente inversa", usdRelation: "Inversa moderada", expectedBehavior: "El proxy definitivo del capex en Inteligencia Artificial. Muy expuesta a dinámicas de exceso de liquidez.", tags: ["Momentum", "Hardware"] },
-  { id: "aapl", name: "Apple Inc.", ticker: "AAPL", category: "Acciones", price: "172.40", trend: "-1.1%", trendType: "down", macroSensitivity: "Calidad global", intRateRelation: "Inversa moderada", vixRelation: "Inversa", usdRelation: "Inversa", expectedBehavior: "Propiedades defensivas dentro de Growth gracias a una generación de caja masiva y recompras continuas.", tags: ["Quality", "Gran Cap"] },
-  { id: "itx", name: "Inditex", ticker: "ITX", category: "Acciones", price: "44.50", trend: "+0.3%", trendType: "up", macroSensitivity: "Retail europeo", intRateRelation: "Mixta", vixRelation: "Inversa", usdRelation: "Directa leve", expectedBehavior: "Sólida generación de caja e inventario ágil, beneficiándose de un consumidor fuerte a nivel global.", tags: ["Valor", "Consumo cíclico"] },
 
-  // Índices
-  { id: "sp500", name: "S&P 500", ticker: "SPX", category: "Índices", price: "5,123.41", trend: "+1.2%", trendType: "up", macroSensitivity: "Sensible a liquidez", intRateRelation: "Inversa moderada", vixRelation: "Fuertemente inversa", usdRelation: "Inversa leve", expectedBehavior: "Perfil alcista ante liquidez expansiva. Vulnerable a sorpresas de inflación que repunten los tipos.", tags: ["Pro-cíclico", "Diversificado"] },
-  { id: "ndx", name: "Nasdaq 100", ticker: "NDX", category: "Índices", price: "18,240.20", trend: "+2.1%", trendType: "up", macroSensitivity: "Muy sensible a tipos", intRateRelation: "Fuertemente inversa", vixRelation: "Fuertemente inversa", usdRelation: "Inversa moderada", expectedBehavior: "Rinde excepcionalmente en pausas de ciclos monetarios combinadas con grandes montos de liquidez global.", tags: ["Growth", "Alta Beta"] },
-  { id: "stoxx50", name: "Euro Stoxx 50", ticker: "SX5E", category: "Índices", price: "4,980.15", trend: "+0.4%", trendType: "up", macroSensitivity: "Valor y ciclo industrial", intRateRelation: "Directa leve", vixRelation: "Inversa", usdRelation: "Directa", expectedBehavior: "Elevado peso bancario e industrial. Se beneficia típicamente con curvas empinadas y ciclo industrial fuerte.", tags: ["Value", "Europa"] },
+  // ── 1. MATERIAS PRIMAS (Commodities) ──────────────────────────────────────
+  {
+    id: "gold", name: "Oro", ticker: "XAU/USD", category: "Materias primas",
+    price: "2,350", trend: "+0.5%", trendType: "up",
+    macroSensitivity: "Tipos reales y refugio",
+    intRateRelation: "Fuertemente inversa", vixRelation: "Directa en extremos", usdRelation: "Fuertemente inversa",
+    expectedBehavior: "Activo refugio por excelencia. Sube cuando los tipos reales bajan, el dólar se debilita o hay miedo geopolítico. Es el termómetro del miedo a la devaluación monetaria.",
+    tags: ["Refugio", "Anti-fiat", "Inflación"]
+  },
+  {
+    id: "silver", name: "Plata", ticker: "XAG/USD", category: "Materias primas",
+    price: "27.40", trend: "+1.2%", trendType: "up",
+    macroSensitivity: "Industrial + refugio",
+    intRateRelation: "Inversa", vixRelation: "Directa moderada", usdRelation: "Inversa",
+    expectedBehavior: "Híbrido entre metal refugio y metal industrial. Se beneficia del ciclo industrial fuerte y de entornos de dólar débil. Más volátil que el oro.",
+    tags: ["Refugio", "Industrial", "Alta Beta"]
+  },
+  {
+    id: "copper", name: "Cobre (LME)", ticker: "HG/USD", category: "Materias primas",
+    price: "4.35", trend: "+0.8%", trendType: "up",
+    macroSensitivity: "Barómetro del ciclo industrial",
+    intRateRelation: "Inversa moderada", vixRelation: "Inversa", usdRelation: "Inversa",
+    expectedBehavior: "Llamado 'el economista con doctorado'. Sube cuando el crecimiento global acelera (especialmente China) y cae cuando se anticipa recesión. Líder adelantado del ciclo.",
+    tags: ["Pro-cíclico", "China", "Industrial"]
+  },
+  {
+    id: "aluminium", name: "Aluminio (LME)", ticker: "ALI/USD", category: "Materias primas",
+    price: "2,410", trend: "+0.3%", trendType: "up",
+    macroSensitivity: "Ciclo industrial global",
+    intRateRelation: "Inversa moderada", vixRelation: "Inversa", usdRelation: "Inversa",
+    expectedBehavior: "Sensible al coste energético y al ciclo manufacturero. Se ve presionado por la fortaleza del dólar y se beneficia de la demanda industrial de autos eléctricos e infraestructura.",
+    tags: ["Industrial", "Energía", "Transición verde"]
+  },
+  {
+    id: "brent", name: "Petróleo Brent", ticker: "BRN/USD", category: "Materias primas",
+    price: "87.60", trend: "+1.1%", trendType: "up",
+    macroSensitivity: "Crecimiento global y OPEP",
+    intRateRelation: "Mixta", vixRelation: "Inversa", usdRelation: "Inversa",
+    expectedBehavior: "Referencia global del crudo. Sube con expansión económica, tensiones geopolíticas en Oriente Medio o recortes de la OPEP+. Su precio impacta directamente en la inflación.",
+    tags: ["Energía", "Pro-inflación", "Geopolítica"]
+  },
+  {
+    id: "natgas", name: "Gas Natural", ticker: "NG/USD", category: "Materias primas",
+    price: "1.95", trend: "-2.1%", trendType: "down",
+    macroSensitivity: "Estacional y geopolítico",
+    intRateRelation: "Neutral", vixRelation: "Directa en crisis", usdRelation: "Inversa leve",
+    expectedBehavior: "Muy volátil. Sensible a la temperatura, el invierno europeo, la capacidad de almacenamiento y las tensiones con Rusia. Factor clave para la inflación energética europea.",
+    tags: ["Energía", "Europa", "Estacional"]
+  },
+  {
+    id: "wheat", name: "Trigo (Chicago)", ticker: "ZW/USD", category: "Materias primas",
+    price: "5.42", trend: "-0.4%", trendType: "down",
+    macroSensitivity: "Geopolítico y climático",
+    intRateRelation: "Neutral", vixRelation: "Directa en crisis", usdRelation: "Inversa",
+    expectedBehavior: "Muy sensible a conflictos (Ucrania-Rusia), sequías y la política agrícola global. Afecta directamente al IPC de alimentos y a países emergentes importadores.",
+    tags: ["Alimentos", "Geopolítica", "Inflación"]
+  },
+  {
+    id: "corn", name: "Maíz (Chicago)", ticker: "ZC/USD", category: "Materias primas",
+    price: "4.38", trend: "+0.2%", trendType: "up",
+    macroSensitivity: "Demanda energética y alimentaria",
+    intRateRelation: "Neutral", vixRelation: "Neutral", usdRelation: "Inversa",
+    expectedBehavior: "Clave para la alimentación animal y el etanol. Correlacionado con el precio del petróleo (biocombustibles) y la demanda de China. Factor de inflación en mercados emergentes.",
+    tags: ["Alimentos", "Bioenergía", "Emergentes"]
+  },
+  {
+    id: "soy", name: "Soja (Chicago)", ticker: "ZS/USD", category: "Materias primas",
+    price: "11.85", trend: "-0.6%", trendType: "down",
+    macroSensitivity: "Demanda China y clima",
+    intRateRelation: "Neutral", vixRelation: "Neutral", usdRelation: "Inversa",
+    expectedBehavior: "El mercado de la soja es uno de los más ligados a China como importador y a Brasil/Argentina como productores. Sube con la debilidad del dólar y la demanda proteica global.",
+    tags: ["Alimentos", "China", "Emergentes"]
+  },
+  {
+    id: "fao", name: "Índice FAO Alimentos", ticker: "FAO", category: "Materias primas",
+    price: "118.3", trend: "-0.5%", trendType: "down",
+    macroSensitivity: "Inflación alimentaria global",
+    intRateRelation: "Neutral", vixRelation: "Directa en crisis", usdRelation: "Inversa",
+    expectedBehavior: "Mide el precio promedio global de cereales, aceites, lácteos, carnes y azúcar. Predictor adelantado de inflación en economías emergentes y presión social.",
+    tags: ["Alimentos", "Inflación", "Emergentes"]
+  },
 
-  // Bonos
-  { id: "us10y", name: "US Treasury 10Y", ticker: "US10Y", category: "Bonos", price: "4.35%", trend: "+2 bps", trendType: "down", macroSensitivity: "Tipos reales", intRateRelation: "Directa a expectativas", vixRelation: "Inversa a rendimientos", usdRelation: "Directa", expectedBehavior: "Referencia global libre de riesgo. Sus rendimientos suben con presiones inflacionarias o crecimiento fuerte económico.", tags: ["Referencia", "Soberano"] },
-  { id: "bund", name: "Bund Alemán 10Y", ticker: "BUND", category: "Bonos", price: "2.40%", trend: "-1 bps", trendType: "up", macroSensitivity: "Riesgo Eurozona", intRateRelation: "Directa a expectativas BCE", vixRelation: "Inversa a rendimientos", usdRelation: "Inversa leve", expectedBehavior: "Principal activo refugio de la Eurozona. Funciona como paraguas ante estrés político o riesgos recesivos en la UE.", tags: ["Refugio EUR", "Soberano"] },
+  // ── 2. MACRO GLOBAL ────────────────────────────────────────────────────────
+  {
+    id: "pib_mundial", name: "PIB Mundial (YoY)", ticker: "GDP-WORLD", category: "Macro Global",
+    price: "+2.8%", trend: "-0.2%", trendType: "down",
+    macroSensitivity: "Ciclo económico global",
+    intRateRelation: "Directa", vixRelation: "Inversa", usdRelation: "Mixta",
+    expectedBehavior: "La medida más amplia del crecimiento real. Una desaceleración global impacta a activos cíclicos, materias primas y emergentes. Determina el tono general del ciclo de inversión.",
+    tags: ["Macro", "Ciclo", "Global"]
+  },
+  {
+    id: "pib_eeuu", name: "PIB EE.UU. (YoY)", ticker: "GDP-US", category: "Macro Global",
+    price: "+2.4%", trend: "+0.1%", trendType: "up",
+    macroSensitivity: "Motor de la economía global",
+    intRateRelation: "Directa a decisiones Fed", vixRelation: "Inversa", usdRelation: "Directa",
+    expectedBehavior: "El crecimiento de EEUU es el ancla global. Un PIB robusto presiona a la Fed a mantener tipos altos. Beneficia al sector financiero y a los cíclicos americanos.",
+    tags: ["Macro", "EEUU", "Fed"]
+  },
+  {
+    id: "pib_eurozona", name: "PIB Eurozona (YoY)", ticker: "GDP-EUR", category: "Macro Global",
+    price: "+0.4%", trend: "-0.1%", trendType: "down",
+    macroSensitivity: "Ciclo europeo",
+    intRateRelation: "Directa a decisiones BCE", vixRelation: "Inversa", usdRelation: "Inversa leve",
+    expectedBehavior: "La eurozona crece poco. Muy dependiente de Alemania e industria pesada. Afectada por energía cara y comercio global débil. Impacta directamente al Euro Stoxx y al EUR/USD.",
+    tags: ["Macro", "Europa", "BCE"]
+  },
+  {
+    id: "pib_china", name: "PIB China (YoY)", ticker: "GDP-CN", category: "Macro Global",
+    price: "+4.9%", trend: "+0.3%", trendType: "up",
+    macroSensitivity: "Motor de commodities y emergentes",
+    intRateRelation: "Neutral", vixRelation: "Inversa", usdRelation: "Inversa leve",
+    expectedBehavior: "China es el principal comprador global de materias primas. Un repunte del PIB chino dispara cobre, soja y petróleo. Un enfriamiento penaliza a emergentes y materias primas.",
+    tags: ["Macro", "China", "Commodities"]
+  },
+  {
+    id: "ipc_eeuu", name: "IPC EE.UU. (YoY)", ticker: "CPI-US", category: "Macro Global",
+    price: "+3.2%", trend: "-0.1%", trendType: "down",
+    macroSensitivity: "Decisiones de la Fed",
+    intRateRelation: "Directa fuerte", vixRelation: "Directa en surpresas", usdRelation: "Directa",
+    expectedBehavior: "El dato de inflación más vigilado del mundo. Una sorpresa al alza fuerza a la Fed a endurecer política monetaria, lo que penaliza bonos y growth. A la baja, abre la puerta a recortes.",
+    tags: ["Inflación", "Fed", "EEUU"]
+  },
+  {
+    id: "ipc_eurozona", name: "IPC Eurozona (YoY)", ticker: "CPI-EUR", category: "Macro Global",
+    price: "+2.4%", trend: "-0.3%", trendType: "down",
+    macroSensitivity: "Decisiones del BCE",
+    intRateRelation: "Directa", vixRelation: "Neutral", usdRelation: "Inversa leve",
+    expectedBehavior: "Governa las decisiones del BCE. Una inflación pegajosa retrasa los recortes de tipos en Europa, presionando el crédito y la renta variable de calidad.",
+    tags: ["Inflación", "BCE", "Europa"]
+  },
+  {
+    id: "ffr", name: "Fed Funds Rate", ticker: "FFR", category: "Macro Global",
+    price: "5.25%", trend: "0 bps", trendType: "flat",
+    macroSensitivity: "Precio del dinero en EEUU",
+    intRateRelation: "Directa (es la referencia)", vixRelation: "Directa en cambios", usdRelation: "Directa",
+    expectedBehavior: "La palanca macroeconómica más poderosa del mundo. Cada subida restringe crédito global y fortalece el dólar. Cada bajada expande liquidez y beneficia a activos de riesgo.",
+    tags: ["Fed", "Política monetaria", "EEUU"]
+  },
+  {
+    id: "bce_rate", name: "Tipo de Interés BCE", ticker: "ECB-RATE", category: "Macro Global",
+    price: "4.00%", trend: "0 bps", trendType: "flat",
+    macroSensitivity: "Precio del dinero en Europa",
+    intRateRelation: "Directa", vixRelation: "Neutral", usdRelation: "Inversa (EUR/USD)",
+    expectedBehavior: "Referencia para el crédito en la eurozona. Su trayectoria marca el diferencial con la Fed y por tanto el EUR/USD. Recortes del BCE favorecen bolsas europeas y debilitan al Euro.",
+    tags: ["BCE", "Política monetaria", "Europa"]
+  },
+  {
+    id: "real_rate_us", name: "Tipo Real EEUU (10Y-Breakeven)", ticker: "TIPS-10Y", category: "Macro Global",
+    price: "+1.85%", trend: "+5 bps", trendType: "up",
+    macroSensitivity: "Coste real del capital",
+    intRateRelation: "Directa (es el tipo real)", vixRelation: "Inversa", usdRelation: "Directa",
+    expectedBehavior: "El tipo más importante para los activos reales. Cuando sube, el oro y el growth sufren. Cuando baja (tipos nominales bajan o expectativas inflación suben), el oro y los emergentes se benefician.",
+    tags: ["Tipos reales", "Oro", "EEUU"]
+  },
 
-  // Materias primas
-  { id: "gold", name: "Oro", ticker: "XAU", category: "Materias primas", price: "2,350.10", trend: "+0.5%", trendType: "up", macroSensitivity: "Sensible a tipos reales", intRateRelation: "Inversa a yields reales", vixRelation: "Directa en extremos", usdRelation: "Fuertemente inversa", expectedBehavior: "Actúa como refugio geopolítico defensivo y cobertura histórica ante el envilecimiento (devaluación fiduciaria).", tags: ["Refugio", "Anti-fiat"] },
-  { id: "crude", name: "Petróleo (WTI)", ticker: "CL", category: "Materias primas", price: "85.60", trend: "+1.2%", trendType: "up", macroSensitivity: "Crecimiento y OPEP", intRateRelation: "Mixta", vixRelation: "Inversa", usdRelation: "Inversa", expectedBehavior: "Muy correlacionado con el ciclo económico real expansivo, la demanda de China y decisiones de la OPEP+.", tags: ["Energía", "Pro-inflación"] },
+  // ── 3. CICLO ECONÓMICO Y RIESGO ────────────────────────────────────────────
+  {
+    id: "pmi_global", name: "PMI Manufacturero Global", ticker: "PMI-WORLD", category: "Ciclo y Riesgo",
+    price: "50.3", trend: "+0.4", trendType: "up",
+    macroSensitivity: "Salud del ciclo industrial",
+    intRateRelation: "Inversa leve", vixRelation: "Inversa", usdRelation: "Mixta",
+    expectedBehavior: "Por encima de 50 = expansión. Por debajo = contracción. Es el indicador líder más seguido del ciclo fabril global. Su cruce arriba o abajo de 50 mueve fuerte a cíclicos y commodities.",
+    tags: ["Ciclo", "Manufactura", "Global"]
+  },
+  {
+    id: "pmi_eeuu", name: "PMI Manufacturero EE.UU.", ticker: "PMI-US", category: "Ciclo y Riesgo",
+    price: "51.9", trend: "+1.2", trendType: "up",
+    macroSensitivity: "Ciclo industrial americano",
+    intRateRelation: "Inversa leve", vixRelation: "Inversa", usdRelation: "Directa",
+    expectedBehavior: "Indicador líder del sector fabril de EEUU. Su recuperación impulsa a industriales, materiales y energía. Cuando se desinfla, suele anticipar revisiones de beneficios a la baja.",
+    tags: ["Ciclo", "EEUU", "Industrial"]
+  },
+  {
+    id: "pmi_eurozona", name: "PMI Manufacturero Eurozona", ticker: "PMI-EUR", category: "Ciclo y Riesgo",
+    price: "46.5", trend: "+0.8", trendType: "up",
+    macroSensitivity: "Ciclo industrial europeo",
+    intRateRelation: "Inversa leve", vixRelation: "Inversa", usdRelation: "Directa (EUR)",
+    expectedBehavior: "En zona de contracción desde hace meses. Arrastrado por Alemania. Su recuperación impulsaría al Euro Stoxx y al sector bancario europeo. Es uno de los riesgos macro más vigilados.",
+    tags: ["Ciclo", "Europa", "Recesión"]
+  },
+  {
+    id: "vix", name: "VIX (Volatilidad S&P 500)", ticker: "VIX", category: "Ciclo y Riesgo",
+    price: "14.20", trend: "-5.4%", trendType: "down",
+    macroSensitivity: "Termómetro del miedo global",
+    intRateRelation: "Directa en crisis", vixRelation: "Es el propio VIX", usdRelation: "Directa en extremos",
+    expectedBehavior: "Conocido como el índice del miedo. VIX < 20 = calma. VIX > 30 = estrés. Los picos de VIX son oportunidades de compra históricas si el sistema financiero no está en riesgo sistémico.",
+    tags: ["Riesgo", "Opciones", "Sentimiento"]
+  },
+  {
+    id: "dxy", name: "Índice Dólar (DXY)", ticker: "DXY", category: "Ciclo y Riesgo",
+    price: "104.30", trend: "-0.1%", trendType: "down",
+    macroSensitivity: "Liquidez global y refugio",
+    intRateRelation: "Directa fuerte", vixRelation: "Directa en crisis", usdRelation: "Es la referencia",
+    expectedBehavior: "Un DXY fuerte drena liquidez global: penaliza emergentes, commodities y multinacionales americanas. Un DXY débil expande liquidez y beneficia al oro, emergentes y bolsas internacionales.",
+    tags: ["Dólar", "Refugio", "Liquidez"]
+  },
 
-  // Criptomonedas
-  { id: "btc", name: "Bitcoin", ticker: "BTC", category: "Criptomonedas", price: "67,400.00", trend: "+4.5%", trendType: "up", macroSensitivity: "Proxy purista de M2", intRateRelation: "Inversa moderada", vixRelation: "Inversa moderada", usdRelation: "Fuertemente inversa", expectedBehavior: "Alta beta frente a inyecciones de masas monetarias centrales. Elevada volatilidad y alta reactividad al dólar débil.", tags: ["Extremo riesgo", "Pura liquidez"] },
-  { id: "eth", name: "Ethereum", ticker: "ETH", category: "Criptomonedas", price: "3,550.80", trend: "+2.8%", trendType: "up", macroSensitivity: "Liquidez y adopción On-chain", intRateRelation: "Inversa", vixRelation: "Inversa fuerte", usdRelation: "Inversa", expectedBehavior: "Matriz similar a BTC pero sumando un componente tecnológico tipo 'software equity'. Elevadísima volatilidad.", tags: ["Plataforma web3", "Alta Beta"] }
+  // ── 4. RATIOS MACRO ────────────────────────────────────────────────────────
+  {
+    id: "ratio_oro_plata", name: "Ratio Oro/Plata", ticker: "GOLD/SILVER", category: "Ratios Macro",
+    price: "85.8", trend: "-0.7", trendType: "down",
+    macroSensitivity: "Apetito por riesgo y refugio",
+    intRateRelation: "Neutral", vixRelation: "Directa", usdRelation: "Neutral",
+    expectedBehavior: "Cuando el ratio sube (>85), el mercado prefiere el refugio del oro frente al riesgo industrial de la plata. Cuando baja, hay apetito por activos industriales y optimismo económico.",
+    tags: ["Ratio", "Sentimiento", "Refugio"]
+  },
+  {
+    id: "ratio_cobre_oro", name: "Ratio Cobre/Oro", ticker: "COPPER/GOLD", category: "Ratios Macro",
+    price: "0.0019", trend: "+0.5%", trendType: "up",
+    macroSensitivity: "Ciclo económico vs. refugio",
+    intRateRelation: "Directa", vixRelation: "Inversa", usdRelation: "Neutral",
+    expectedBehavior: "Uno de los mejores predictores de los tipos a 10 años americanos. Cuando sube, la economía real gana fuerza; cuando baja, el refugio domina. Útil para anticipar movimientos en bonos.",
+    tags: ["Ratio", "Ciclo", "Bonos"]
+  },
+  {
+    id: "ratio_oro_dxy", name: "Ratio Oro/Dólar", ticker: "XAU/DXY", category: "Ratios Macro",
+    price: "22.5", trend: "+0.6%", trendType: "up",
+    macroSensitivity: "Devaluación monetaria",
+    intRateRelation: "Inversa", vixRelation: "Directa", usdRelation: "Fuertemente inversa",
+    expectedBehavior: "Mide cuánto oro se necesita para comprar una unidad de DXY. Cuando sube, el mercado está desconfiando del sistema fiduciario. Es la señal más limpia de búsqueda de valor real sobre papel.",
+    tags: ["Ratio", "Anti-fiat", "Devaluación"]
+  },
+
+  // ── 5. OTROS ACTIVOS CLAVE ─────────────────────────────────────────────────
+  {
+    id: "bund", name: "Bund Alemán 10Y", ticker: "BUND", category: "Bonos",
+    price: "2.40%", trend: "-1 bps", trendType: "up",
+    macroSensitivity: "Refugio de la Eurozona",
+    intRateRelation: "Directa a expectativas BCE", vixRelation: "Inversa a rendimientos", usdRelation: "Inversa leve",
+    expectedBehavior: "Principal activo refugio de Europa. Cuando hay tensión política o riesgo de recesión en la UE, el Bund se aprecia (rendimiento baja). Es el ancla de la renta fija europea.",
+    tags: ["Refugio EUR", "Soberano", "Europa"]
+  },
+  {
+    id: "us10y", name: "US Treasury 10Y", ticker: "US10Y", category: "Bonos",
+    price: "4.35%", trend: "+2 bps", trendType: "down",
+    macroSensitivity: "Tipos reales globales",
+    intRateRelation: "Directa a expectativas Fed", vixRelation: "Inversa a rendimientos", usdRelation: "Directa",
+    expectedBehavior: "La tasa más importante del mundo. Su rendimiento determina el coste del capital global: hipotecas, crédito corporativo y valoración de acciones. Sube con inflación o crecimiento fuerte.",
+    tags: ["Referencia", "Soberano", "EEUU"]
+  },
+  {
+    id: "btc", name: "Bitcoin", ticker: "BTC", category: "Criptomonedas",
+    price: "67,400", trend: "+4.5%", trendType: "up",
+    macroSensitivity: "Proxy de liquidez global (M2)",
+    intRateRelation: "Inversa moderada", vixRelation: "Inversa moderada", usdRelation: "Fuertemente inversa",
+    expectedBehavior: "El activo más sensible a las inyecciones de liquidez de los bancos centrales. Funciona como un barómetro extremo del exceso monetario. Muy volátil frente a cambios bruscos de tipos o regulación.",
+    tags: ["Cripto", "Liquidez", "Alta Beta"]
+  },
+  {
+    id: "crude", name: "Petróleo WTI", ticker: "WTI", category: "Materias primas",
+    price: "85.60", trend: "+1.2%", trendType: "up",
+    macroSensitivity: "Crecimiento y OPEP",
+    intRateRelation: "Mixta", vixRelation: "Inversa", usdRelation: "Inversa",
+    expectedBehavior: "Referencia americana del crudo. Correlacionado con el ciclo económico de EEUU y las decisiones de la OPEP+. Su precio impacta directamente a la inflación energética y al consumidor.",
+    tags: ["Energía", "Pro-inflación", "EEUU"]
+  },
+  {
+    id: "ndx", name: "Nasdaq 100", ticker: "NDX", category: "Índices",
+    price: "18,240", trend: "+2.1%", trendType: "up",
+    macroSensitivity: "Muy sensible a tipos",
+    intRateRelation: "Fuertemente inversa", vixRelation: "Fuertemente inversa", usdRelation: "Inversa moderada",
+    expectedBehavior: "El índice de tecnología y crecimiento más representativo. Rinde excepcionalmente cuando la Fed pausa o baja tipos y hay liquidez global abundante. Muy vulnerable a surpresas de inflación.",
+    tags: ["Growth", "Tecnología", "Alta Beta"]
+  },
+  {
+    id: "sp500", name: "S&P 500", ticker: "SPX", category: "Índices",
+    price: "5,123", trend: "+1.2%", trendType: "up",
+    macroSensitivity: "Sensible a liquidez y ciclo",
+    intRateRelation: "Inversa moderada", vixRelation: "Fuertemente inversa", usdRelation: "Inversa leve",
+    expectedBehavior: "El índice de referencia global. Alcista ante liquidez expansiva y crecimiento sostenido. Vulnerable a sorpresas de inflación persistente que retrasen los recortes de la Fed.",
+    tags: ["Pro-cíclico", "Diversificado", "EEUU"]
+  },
 ];

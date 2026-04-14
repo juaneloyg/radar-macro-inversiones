@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, TrendingUp, TrendingDown, Minus, Activity, DollarSign, Percent } from 'lucide-react';
 import { assetsData } from '../data';
 
-const categories = ["Todos", "Acciones", "Índices", "Bonos", "Materias primas", "Criptomonedas"];
+const categories = ["Todos", "Materias primas", "Macro Global", "Ciclo y Riesgo", "Ratios Macro", "Índices", "Bonos", "Criptomonedas"];
 
 export default function AssetExplorer() {
   const [searchTerm, setSearchTerm] = useState('');
