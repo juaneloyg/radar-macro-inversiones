@@ -111,7 +111,7 @@ export const indicatorsData = [
     status: "neutral",
     subscore: 55,
     weight: weights.dolar,
-    description: "Medida del valor del dólar frente a una cesta de monedas extranjeras. Un dólar fuerte puede presionar las ganancias de multinacionales de EEUU.",
+    description: "El DXY mide la fuerza del dólar frente a una cesta de las seis divisas más importantes del mundo (especialmente el Euro). Es el activo refugio por excelencia: cuando hay miedo o incertidumbre, el DXY suele subir. Un dólar fuerte actúa como una aspiradora de liquidez global, lo que suele castigar a las materias primas (como el oro o el petróleo) y a los mercados emergentes, ya que estos activos se cotizan en dólares y se vuelven más caros para el resto del mundo. Por ejemplo, si el DXY sube con fuerza, las multinacionales tecnológicas pueden ver reducidos sus beneficios al convertir sus ventas internacionales a una moneda local ahora más costosa.",
     history: generateTrendData(90, 25, 0.001, 0.5),
   },
   {
