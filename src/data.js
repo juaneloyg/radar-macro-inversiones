@@ -137,7 +137,7 @@ export const indicatorsData = [
     status: "favorable",
     subscore: 55,
     weight: weights.crecimiento,
-    description: "Evalúa la solidez del ciclo industrial y del consumidor frente al consenso. Un crecimiento robusto estabiliza la macro y beneficia a empresas pro-cíclicas, separando fases reales de expansión frente a meros rebotes de liquidez.",
+    description: "Este indicador mide la diferencia entre los datos económicos publicados (como el PIB o el empleo) y lo que los analistas habían pronosticado. Una sorpresa positiva (gráfico subiendo) indica que la economía está más fuerte de lo previsto, lo que suele impulsar a las acciones \"cíclicas\" como bancos o industria. Por contra, sorpresas negativas constantes sugieren que el mercado es demasiado optimista y se acerca un enfriamiento. Es el mejor termómetro para saber si el crecimiento real respalda las subidas de la bolsa o si solo estamos ante una burbuja de liquidez.",
     history: generateTrendData(50, 25, 0.01, 2),
   }
 ];
