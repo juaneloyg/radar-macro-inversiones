@@ -98,7 +98,7 @@ export const indicatorsData = [
     status: "defensive",
     subscore: 30,
     weight: weights.curva,
-    description: "La diferencia de rendimiento entre el bono a 10 años y el bono a 2 años. Una curva invertida (valores negativos) ha sido históricamente un indicador de recesión.",
+    description: "Este indicador mide la diferencia de salud entre el corto y el largo plazo económico. En una economía sana, el bono a 10 años paga más que el de 2 años (curva positiva). Si el spread cae por debajo de cero, hablamos de una curva invertida, lo que significa que el mercado ve más riesgo hoy que mañana; este fenómeno ha predicho casi todas las recesiones modernas. Por ejemplo, una inversión de la curva dificulta que los bancos concedan crédito, ya que ellos 'compran' dinero a corto plazo y lo prestan a largo; si el margen desaparece, el flujo de dinero a la economía real se frena en seco.",
     history: generateTrendData(1, 25, -0.0002, 0.05),
   },
   {
