@@ -85,7 +85,7 @@ export const indicatorsData = [
     status: "neutral",
     subscore: 50,
     weight: weights.tipos,
-    description: "Rendimiento del bono estadounidense a 10 años. Unos tipos altos encarecen el coste del capital, limitando a veces la valoración de acciones de crecimiento.",
+    description: "Rendimiento del bono estadounidense a 10 años. Es el termómetro global del coste del dinero. Cuando este sube, pedir prestado se vuelve más caro para todos: desde una familia que busca una hipoteca hasta una empresa tecnológica que necesita crédito para innovar. Históricamente, unos tipos altos actúan como un freno para la bolsa, ya que los inversores prefieren la seguridad de la renta fija frente al riesgo de las acciones. Además, un repunte en los rendimientos suele fortalecer al dólar, encareciendo las exportaciones y presionando a los mercados emergentes.",
     history: generateTrendData(3.5, 25, 0.0001, 0.05),
   },
   {
