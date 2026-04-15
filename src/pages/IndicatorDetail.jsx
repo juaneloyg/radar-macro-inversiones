@@ -132,8 +132,10 @@ export default function IndicatorDetail() {
       }
 
       const oldVal = closest.value;
-      if (oldVal && oldVal !== 0) {
-        const diff = realVal - oldVal;
+      const currentVal = dbHistory[dbHistory.length - 1]?.value;
+
+      if (oldVal && oldVal !== 0 && currentVal !== undefined) {
+        const diff = currentVal - oldVal;
         const pct = (diff / oldVal) * 100;
 
         if (Math.abs(pct) < 0.01) {

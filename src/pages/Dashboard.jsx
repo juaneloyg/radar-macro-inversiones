@@ -324,8 +324,8 @@ export default function Dashboard() {
       }
 
       const oldVal = closest.value;
-      const currentVal = realValue;
-      if (oldVal && oldVal !== 0) {
+      const currentVal = hist[hist.length - 1]?.value;
+      if (oldVal && oldVal !== 0 && currentVal !== undefined) {
         const diff = currentVal - oldVal;
         const pct = (diff / oldVal) * 100;
 
