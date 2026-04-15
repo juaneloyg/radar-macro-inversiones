@@ -38,22 +38,22 @@ export default function IndicatorCard({ indicator }) {
         <h3 className="indicator-card-title">{indicator.name}</h3>
         <span className="indicator-card-weight">Peso: {indicator.weight}%</span>
       </div>
-      
+
       <div className="indicator-card-value-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span className="indicator-card-value">{indicator.value}</span>
         <div className="indicator-card-change" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.9rem', fontWeight: 600 }}>
-          <IconChange /> {indicator.change}
+          <IconChange /> {indicator.change} <span style={{ fontSize: '0.7rem', opacity: 0.6, marginLeft: '2px' }}>7d</span>
         </div>
       </div>
-      
+
       <div className="indicator-chart-small">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={indicator.history.slice(-30)}>
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke={getChartColor()} 
-              strokeWidth={2} 
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke={getChartColor()}
+              strokeWidth={2}
               dot={false}
               isAnimationActive={false}
             />

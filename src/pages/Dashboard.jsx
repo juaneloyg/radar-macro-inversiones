@@ -294,10 +294,59 @@ export default function Dashboard() {
       realValue = derived.dxy;
       subscore = 100 - derived.dxy;
     }
+    if (ind.id === 'inflacion') {
+      realValue = derived.inflation;
+      subscore = 100 - derived.inflation;
+    }
+    if (ind.id === 'crecimiento') {
+      realValue = derived.growth;
+      subscore = derived.growth;
+    }
 
     const hist = macroHistory?.[ind.id] || ind.history;
 
-    return { ...ind, value: realValue, subscore, history: hist };
+    // Calcular variación de últimos 7 días
+    let changeText = ind.change;
+    let changeType = ind.changeType;
+
+    if (macroHistory && macroHistory[ind.id] && macroHistory[ind.id].length > 0) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - 7);
+
+      let closest = hist[0];
+      let minDiff = Infinity;
+      for (const h of hist) {
+        const diff = Math.abs(new Date(h.date) - targetDate);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = h;
+        }
+      }
+
+      const oldVal = closest.value;
+      const currentVal = realValue;
+      if (oldVal && oldVal !== 0) {
+        const diff = currentVal - oldVal;
+        const pct = (diff / oldVal) * 100;
+
+        if (Math.abs(pct) < 0.01) {
+          changeType = 'flat';
+        } else {
+          changeType = pct > 0 ? 'up' : 'down';
+        }
+
+        if (['tipos', 'curva', 'credito'].includes(ind.id)) {
+          const bps = Math.round(diff * 100);
+          changeText = `${bps > 0 ? '+' : ''}${bps} bps`;
+        } else if (ind.id === 'crecimiento') {
+          changeText = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}`;
+        } else {
+          changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
+        }
+      }
+    }
+
+    return { ...ind, value: realValue, subscore, history: hist, change: changeText, changeType: changeType };
   });
 
   const liquidezInd = realIndicators.find((i) => i.id === 'liquidez');

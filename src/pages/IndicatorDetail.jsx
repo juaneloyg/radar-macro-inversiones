@@ -26,8 +26,8 @@ const safeNumber = (val, fallback = 0) => {
 export default function IndicatorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]); 
+
+  const [activeRange, setActiveRange] = useState(TIME_RANGES[1]);
   const [dbSnap, setDbSnap] = useState(null);
   const [dbHistory, setDbHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +49,7 @@ export default function IndicatorDetail() {
           .select('*')
           .order('created_at', { ascending: false })
           .limit(1);
-        
+
         if (snapErr) throw snapErr;
         if (snap && snap[0]) setDbSnap(snap[0]);
 
@@ -57,7 +57,7 @@ export default function IndicatorDetail() {
           [0, 999], [1000, 1999], [2000, 2999], [3000, 3999], [4000, 4999]
         ];
 
-        const results = await Promise.all(ranges.map(([from, to]) => 
+        const results = await Promise.all(ranges.map(([from, to]) =>
           supabase
             .from('macro_history')
             .select('date, value')
@@ -71,7 +71,7 @@ export default function IndicatorDetail() {
           if (error) throw error;
           if (data) allHist = [...allHist, ...data];
         }
-        
+
         // Ordenar por fecha ascendente para Recharts
         const sortedHist = allHist.sort((a, b) => new Date(a.date) - new Date(b.date));
         setDbHistory(sortedHist);
@@ -89,33 +89,78 @@ export default function IndicatorDetail() {
 
   const indicator = useMemo(() => {
     if (!baseIndicator) return null;
-    if (!dbSnap) return baseIndicator;
 
     let realVal = baseIndicator.value;
     let realScore = baseIndicator.subscore;
 
-    const colMap = {
-      'liquidez': { v: dbSnap.liquidity, s: dbSnap.liquidity },
-      'vix': { v: dbSnap.vix, s: 100 - dbSnap.vix },
-      'credito': { v: dbSnap.credit_spreads, s: 100 - dbSnap.credit_spreads },
-      'tipos': { v: dbSnap.interest_rates, s: dbSnap.interest_rates },
-      'curva': { v: dbSnap.yield_curve, s: dbSnap.yield_curve },
-      'dolar': { v: dbSnap.dxy, s: 100 - dbSnap.dxy },
-      'inflacion': { v: dbSnap.inflation, s: 100 - dbSnap.inflation },
-      'crecimiento': { v: dbSnap.growth, s: dbSnap.growth }
-    };
+    if (dbSnap) {
+      const colMap = {
+        'liquidez': { v: dbSnap.liquidity, s: dbSnap.liquidity },
+        'vix': { v: dbSnap.vix, s: 100 - dbSnap.vix },
+        'credito': { v: dbSnap.credit_spreads, s: 100 - dbSnap.credit_spreads },
+        'tipos': { v: dbSnap.interest_rates, s: dbSnap.interest_rates },
+        'curva': { v: dbSnap.yield_curve, s: dbSnap.yield_curve },
+        'dolar': { v: dbSnap.dxy, s: 100 - dbSnap.dxy },
+        'inflacion': { v: dbSnap.inflation, s: 100 - dbSnap.inflation },
+        'crecimiento': { v: dbSnap.growth, s: dbSnap.growth }
+      };
 
-    if (colMap[id]) {
-      realVal = colMap[id].v;
-      realScore = safeNumber(colMap[id].s);
+      if (colMap[id]) {
+        realVal = colMap[id].v;
+        realScore = safeNumber(colMap[id].s);
+      }
+    }
+
+    // Calcular variación de últimos 7 días
+    let changeText = baseIndicator.change;
+    let changeType = baseIndicator.changeType;
+
+    if (dbHistory && dbHistory.length > 0) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - 7);
+
+      // Encontrar el registro más cercano a hace 7 días
+      let closest = dbHistory[0];
+      let minDiff = Infinity;
+
+      for (const h of dbHistory) {
+        const diff = Math.abs(new Date(h.date) - targetDate);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = h;
+        }
+      }
+
+      const oldVal = closest.value;
+      if (oldVal && oldVal !== 0) {
+        const diff = realVal - oldVal;
+        const pct = (diff / oldVal) * 100;
+
+        if (Math.abs(pct) < 0.01) {
+          changeType = 'flat';
+        } else {
+          changeType = pct > 0 ? 'up' : 'down';
+        }
+
+        if (['tipos', 'curva', 'credito'].includes(id)) {
+          const bps = Math.round(diff * 100);
+          changeText = `${bps > 0 ? '+' : ''}${bps} bps`;
+        } else if (id === 'crecimiento') {
+          changeText = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}`;
+        } else {
+          changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
+        }
+      }
     }
 
     return {
       ...baseIndicator,
       value: realVal,
-      subscore: realScore
+      subscore: realScore,
+      change: changeText,
+      changeType: changeType
     };
-  }, [baseIndicator, dbSnap, id]);
+  }, [baseIndicator, dbSnap, dbHistory, id]);
 
   const chartData = useMemo(() => {
     if (!dbHistory || dbHistory.length === 0) return [];
@@ -128,7 +173,7 @@ export default function IndicatorDetail() {
     }
 
     const sliced = dbHistory.slice(-targetDays);
-    
+
     const MAX = 300;
     if (sliced.length > MAX) {
       const step = Math.ceil(sliced.length / MAX);
@@ -166,7 +211,7 @@ export default function IndicatorDetail() {
   }
 
   const currentStatus = getStatusFromScore(indicator.subscore);
-  
+
   const getChangeColor = () => {
     if (indicator.changeType === 'up') return indicator.id === 'vix' ? 'var(--status-defensive)' : 'var(--status-favorable)';
     if (indicator.changeType === 'down') return indicator.id === 'vix' ? 'var(--status-favorable)' : 'var(--status-defensive)';
@@ -191,7 +236,7 @@ export default function IndicatorDetail() {
           <div className="stat-value">{indicator.value}</div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Derivado 24h</div>
+          <div className="stat-label">Últimos 7 días</div>
           <div className="stat-value" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '4px' }}>
             {indicator.changeType === 'up' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
             {indicator.change}
@@ -241,15 +286,15 @@ export default function IndicatorDetail() {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="gradientColor" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0}/>
+                  <stop offset="5%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={`var(--status-${currentStatus.class}-dim)`} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                stroke="var(--text-muted)" 
-                fontSize={11} 
+              <XAxis
+                dataKey="date"
+                stroke="var(--text-muted)"
+                fontSize={11}
                 minTickGap={40}
                 tickFormatter={(val) => {
                   try {
@@ -257,18 +302,18 @@ export default function IndicatorDetail() {
                     if (activeRange.days <= 31) return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
                     if (activeRange.days <= 366) return d.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
                     return d.toLocaleDateString('es-ES', { year: 'numeric' });
-                  } catch(e) { return val; }
+                  } catch (e) { return val; }
                 }}
               />
               <YAxis domain={['auto', 'auto']} stroke="var(--text-muted)" fontSize={11} width={40} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ backgroundColor: 'var(--surface-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }}
                 itemStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
                 labelStyle={{ color: 'var(--text-secondary)', marginBottom: '4px' }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="value" 
+              <Area
+                type="monotone"
+                dataKey="value"
                 stroke={`var(--status-${currentStatus.class})`}
                 strokeWidth={3}
                 fill="url(#gradientColor)"
@@ -277,7 +322,7 @@ export default function IndicatorDetail() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        
+
         {chartData.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
             No hay suficientes datos históricos para este periodo en Supabase.
