@@ -35,7 +35,7 @@ fred_tickers = {
 
 print("Arrancando descarga de 25 años de histórico...")
 start_date = (datetime.now() - timedelta(days=25*365)).strftime('%Y-%m-%d')
-end_date = datetime.now().strftime('%Y-%m-%d')
+end_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
 
 # Dataframe maestro para unir todo
 master_df = pd.DataFrame()
