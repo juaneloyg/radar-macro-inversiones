@@ -88,15 +88,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <NavLink
-            to="/base"
-            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-          >
-            <BookOpen size={18} />
-            Base y Fuentes
-          </NavLink>
-        </div>
       </aside>
 
       <main className="main-content">
