@@ -304,6 +304,7 @@ export default function Dashboard() {
     }
 
     const hist = macroHistory?.[ind.id] || ind.history;
+    const latestDate = hist?.[hist.length - 1]?.date;
 
     // Calcular variación de últimos 7 días
     let changeText = ind.change;
@@ -340,8 +341,22 @@ export default function Dashboard() {
       }
     }
 
-    return { ...ind, value: realValue, subscore, history: hist, change: changeText, changeType: changeType };
+    return { ...ind, value: realValue, subscore, history: hist, change: changeText, changeType: changeType, date: latestDate };
   });
+
+  // Calcular la fecha de la última sincronización general
+  const lastSyncDate = useMemo(() => {
+    if (!macroHistory) return null;
+    let maxTime = 0;
+    Object.values(macroHistory).forEach(hArray => {
+      if (hArray.length) {
+        const last = new Date(hArray[hArray.length - 1].date).getTime();
+        if (last > maxTime) maxTime = last;
+      }
+    });
+    if (maxTime === 0) return null;
+    return new Date(maxTime).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }, [macroHistory]);
 
   const liquidezInd = realIndicators.find((i) => i.id === 'liquidez');
   const otherIndicators = realIndicators.filter((i) => i.id !== 'liquidez');
@@ -383,11 +398,32 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-wrapper">
-      <div className="dashboard-header-modern">
-        <h1 className="dashboard-title">Radar Macro</h1>
-        <p className="dashboard-subtitle">
-          Análisis del contexto de mercado y posicionamiento recomendado (Datos en vivo)
-        </p>
+      <div className="dashboard-header-modern" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
+        <div>
+          <h1 className="dashboard-title">Radar Macro</h1>
+          <p className="dashboard-subtitle">
+            Análisis del contexto de mercado y posicionamiento recomendado
+          </p>
+        </div>
+
+        {lastSyncDate && (
+          <div className="last-sync-badge" style={{
+            background: 'var(--surface-highlight)',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            fontSize: '0.85rem',
+            color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            border: '1px solid var(--border-light)',
+            marginBottom: '8px',
+            fontWeight: 600
+          }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--status-favorable)', boxShadow: '0 0 8px var(--status-favorable)' }}></div>
+            Sincronizado: {lastSyncDate}
+          </div>
+        )}
       </div>
 
       <div className="score-hero">

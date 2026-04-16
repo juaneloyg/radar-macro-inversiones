@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, AlertCircle } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 export default function IndicatorCard({ indicator }) {
