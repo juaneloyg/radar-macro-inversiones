@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass, Flame, LineChart, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BarChart3, TrendingUp, DollarSign, Activity, Percent, Compass, Flame, LineChart, Menu, X, BookOpen } from 'lucide-react';
 import { indicatorsData } from '../data';
 
 const iconMap = {
@@ -47,8 +47,8 @@ export default function Layout() {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <NavLink 
-            to="/" 
+          <NavLink
+            to="/"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
             end
           >
@@ -56,18 +56,26 @@ export default function Layout() {
             Dashboard
           </NavLink>
 
-          <NavLink 
-            to="/assets" 
+          <NavLink
+            to="/assets"
             className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
           >
             <Compass size={18} />
             Explorador de Activos
           </NavLink>
-          
+
+          <NavLink
+            to="/base"
+            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          >
+            <BookOpen size={18} />
+            Base y Fuentes
+          </NavLink>
+
           <div style={{ marginTop: '20px', marginBottom: '8px', paddingLeft: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
             Indicadores
           </div>
-          
+
           {indicatorsData.map((ind) => (
             <NavLink
               key={ind.id}
@@ -80,7 +88,7 @@ export default function Layout() {
           ))}
         </nav>
       </aside>
-      
+
       <main className="main-content">
         <Outlet />
       </main>
