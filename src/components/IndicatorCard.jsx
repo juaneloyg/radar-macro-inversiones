@@ -32,12 +32,41 @@ export default function IndicatorCard({ indicator }) {
     }
   };
 
+  // Detectar si el dato es antiguo (más de 48h)
+  const isStale = React.useMemo(() => {
+    if (!indicator.date) return false;
+    const date = new Date(indicator.date);
+    const now = new Date();
+    const diffHours = Math.abs(now - date) / (1000 * 60 * 60);
+    return diffHours > 48;
+  }, [indicator.date]);
+
+  const formattedDate = indicator.date
+    ? new Date(indicator.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+    : null;
+
   return (
     <div className="card indicator-card" onClick={() => navigate(`/indicator/${indicator.id}`)}>
       <div className="indicator-card-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <h3 className="indicator-card-title" style={{ margin: 0 }}>{indicator.name}</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'right', gap: '4px' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fff', opacity: 0.9 }}>los últimos 7 días</span>
+        <div>
+          <h3 className="indicator-card-title" style={{ margin: 0 }}>{indicator.name}</h3>
+          {formattedDate && (
+            <div style={{
+              fontSize: '0.7rem',
+              color: isStale ? 'var(--status-defensive)' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '2px',
+              fontWeight: isStale ? 700 : 500
+            }}>
+              {isStale && <AlertCircle size={10} />}
+              Dato del {formattedDate} {isStale && '(Antiguo)'}
+            </div>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>los últimos 7 días</span>
           <span className="indicator-card-weight" style={{ margin: 0 }}>Peso: {indicator.weight}%</span>
         </div>
       </div>
