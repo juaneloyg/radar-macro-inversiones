@@ -103,6 +103,27 @@ export default function BaseFuentes() {
                     </div>
                 </div>
 
+                {/* Sección: Integridad */}
+                <div className="card" style={{ gridColumn: 'span 2', borderLeft: '4px solid var(--brand-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                        <h2 style={{ fontSize: '1.5rem', margin: 0 }}>🛡️ Garantía e Integridad de Datos</h2>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.7' }}>
+                        Para garantizar tu tranquilidad, el sistema incluye mecanismos de verificación:
+                    </p>
+                    <ul style={{ listStyle: 'none', padding: 0, marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                        <li style={{ background: 'var(--surface-highlight)', padding: '16px', borderRadius: '12px' }}>
+                            <strong>Transparencia:</strong> El código es 100% auditable. Puedes verificar el proceso de descarga en nuestro repositorio de GitHub.
+                        </li>
+                        <li style={{ background: 'var(--surface-highlight)', padding: '16px', borderRadius: '12px' }}>
+                            <strong>Fuentes Oficiales:</strong> No usamos datos de terceros desconocidos; conectamos directamente con Yahoo Finance y la FED de St. Louis (FRED).
+                        </li>
+                        <li style={{ background: 'var(--surface-highlight)', padding: '16px', borderRadius: '12px' }}>
+                            <strong>Control de Frescura:</strong> Si los datos tienen más de 48 horas de antigüedad, el sistema te avisará visualmente con una alerta en naranja.
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
     );

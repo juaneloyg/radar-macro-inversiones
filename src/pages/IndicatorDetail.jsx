@@ -161,7 +161,8 @@ export default function IndicatorDetail() {
       value: realVal,
       subscore: realScore,
       change: changeText,
-      changeType: changeType
+      changeType: changeType,
+      date: dbHistory[dbHistory.length - 1]?.date
     };
   }, [baseIndicator, dbSnap, dbHistory, id, activeRange]);
 
@@ -235,7 +236,14 @@ export default function IndicatorDetail() {
 
       <div className="detail-stats">
         <div className="stat-box">
-          <div className="stat-label">Valor Real</div>
+          <div className="stat-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+            Valor Real
+            {indicator.date && (
+              <span style={{ fontSize: '0.65rem', opacity: 0.6 }}>
+                Capturado: {new Date(indicator.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+              </span>
+            )}
+          </div>
           <div className="stat-value">{indicator.value}</div>
         </div>
         <div className="stat-box">
