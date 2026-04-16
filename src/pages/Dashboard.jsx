@@ -219,6 +219,102 @@ export default function Dashboard() {
     };
   }, [macroData]);
 
+  // Hook para calcular indicadores reales (Mover arriba para cumplir reglas de hooks)
+  const realIndicators = useMemo(() => {
+    if (!derived) return [];
+
+    return fallbackIndicators.map((ind) => {
+      let realValue = ind.value;
+      let subscore = ind.subscore;
+
+      if (ind.id === 'liquidez') {
+        realValue = derived.liquidity;
+        subscore = derived.liquidity;
+      }
+      if (ind.id === 'vix') {
+        realValue = derived.vix;
+        subscore = 100 - derived.vix;
+      }
+      if (ind.id === 'credito') {
+        realValue = derived.credit;
+        subscore = 100 - derived.credit;
+      }
+      if (ind.id === 'tipos') {
+        realValue = derived.rates;
+        subscore = derived.rates;
+      }
+      if (ind.id === 'curva') {
+        realValue = derived.curve;
+        subscore = derived.curve;
+      }
+      if (ind.id === 'dolar') {
+        realValue = derived.dxy;
+        subscore = 100 - derived.dxy;
+      }
+      if (ind.id === 'inflacion') {
+        realValue = derived.inflation;
+        subscore = 100 - derived.inflation;
+      }
+      if (ind.id === 'crecimiento') {
+        realValue = derived.growth;
+        subscore = derived.growth;
+      }
+
+      const hist = macroHistory?.[ind.id] || ind.history;
+      const latestDate = hist?.[hist.length - 1]?.date;
+
+      // Calcular variación de últimos 7 días
+      let changeText = ind.change;
+      let changeType = ind.changeType;
+
+      if (macroHistory && macroHistory[ind.id] && macroHistory[ind.id].length > 0) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() - 7);
+
+        let closest = hist[0];
+        let minDiff = Infinity;
+        for (const h of hist) {
+          const diff = Math.abs(new Date(h.date) - targetDate);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = h;
+          }
+        }
+
+        const oldVal = closest.value;
+        const currentVal = hist[hist.length - 1]?.value;
+        if (oldVal && oldVal !== 0 && currentVal !== undefined) {
+          const diff = currentVal - oldVal;
+          const pct = (diff / oldVal) * 100;
+
+          if (Math.abs(pct) < 0.001) {
+            changeType = 'flat';
+          } else {
+            changeType = pct > 0 ? 'up' : 'down';
+          }
+
+          changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        }
+      }
+
+      return { ...ind, value: realValue, subscore, history: hist, change: changeText, changeType, date: latestDate };
+    });
+  }, [derived, macroHistory]);
+
+  // Calcular la fecha de la última sincronización general
+  const lastSyncDate = useMemo(() => {
+    if (!macroHistory) return null;
+    let maxTime = 0;
+    Object.values(macroHistory).forEach(hArray => {
+      if (Array.isArray(hArray) && hArray.length) {
+        const last = new Date(hArray[hArray.length - 1].date).getTime();
+        if (last > maxTime) maxTime = last;
+      }
+    });
+    if (maxTime === 0) return null;
+    return new Date(maxTime).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }, [macroHistory]);
+
   if (loading) {
     return (
       <div
@@ -259,107 +355,13 @@ export default function Dashboard() {
     );
   }
 
-  const score = derived.computedScore;
-  const status = derived.status;
+  const score = derived?.computedScore;
+  const status = derived?.status;
 
   const getInterpretationText = () => {
+    if (!derived) return '';
     return getMacroInterpretation(score, derived.inflation, derived.growth);
   };
-
-  const realIndicators = fallbackIndicators.map((ind) => {
-    let realValue = ind.value;
-    let subscore = ind.subscore;
-
-    if (ind.id === 'liquidez') {
-      realValue = derived.liquidity;
-      subscore = derived.liquidity;
-    }
-    if (ind.id === 'vix') {
-      realValue = derived.vix;
-      subscore = 100 - derived.vix;
-    }
-    if (ind.id === 'credito') {
-      realValue = derived.credit;
-      subscore = 100 - derived.credit;
-    }
-    if (ind.id === 'tipos') {
-      realValue = derived.rates;
-      subscore = derived.rates;
-    }
-    if (ind.id === 'curva') {
-      realValue = derived.curve;
-      subscore = derived.curve;
-    }
-    if (ind.id === 'dolar') {
-      realValue = derived.dxy;
-      subscore = 100 - derived.dxy;
-    }
-    if (ind.id === 'inflacion') {
-      realValue = derived.inflation;
-      subscore = 100 - derived.inflation;
-    }
-    if (ind.id === 'crecimiento') {
-      realValue = derived.growth;
-      subscore = derived.growth;
-    }
-
-    const hist = macroHistory?.[ind.id] || ind.history;
-    const latestDate = hist?.[hist.length - 1]?.date;
-
-    // Calcular variación de últimos 7 días
-    let changeText = ind.change;
-    let changeType = ind.changeType;
-
-    if (macroHistory && macroHistory[ind.id] && macroHistory[ind.id].length > 0) {
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() - 7);
-
-      let closest = hist[0];
-      let minDiff = Infinity;
-      for (const h of hist) {
-        const diff = Math.abs(new Date(h.date) - targetDate);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closest = h;
-        }
-      }
-
-      const oldVal = closest.value;
-      const currentVal = hist[hist.length - 1]?.value;
-      if (oldVal && oldVal !== 0 && currentVal !== undefined) {
-        const diff = currentVal - oldVal;
-        const pct = (diff / oldVal) * 100;
-
-        if (Math.abs(pct) < 0.001) {
-          changeType = 'flat';
-        } else {
-          changeType = pct > 0 ? 'up' : 'down';
-        }
-
-        // Siempre usamos porcentaje para consistencia
-        changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
-      }
-    }
-
-    return { ...ind, value: realValue, subscore, history: hist, change: changeText, changeType: changeType, date: latestDate };
-  });
-
-  // Calcular la fecha de la última sincronización general
-  const lastSyncDate = useMemo(() => {
-    if (!macroHistory) return null;
-    let maxTime = 0;
-    Object.values(macroHistory).forEach(hArray => {
-      if (hArray.length) {
-        const last = new Date(hArray[hArray.length - 1].date).getTime();
-        if (last > maxTime) maxTime = last;
-      }
-    });
-    if (maxTime === 0) return null;
-    return new Date(maxTime).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-  }, [macroHistory]);
-
-  const liquidezInd = realIndicators.find((i) => i.id === 'liquidez');
-  const otherIndicators = realIndicators.filter((i) => i.id !== 'liquidez');
 
   const getChangeColor = (ind) => {
     switch (ind.changeType) {
