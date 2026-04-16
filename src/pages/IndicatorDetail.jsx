@@ -238,7 +238,7 @@ export default function IndicatorDetail() {
           <div className="stat-value">{indicator.value}</div>
         </div>
         <div className="stat-box">
-          <div className="stat-label">Últimos 7 días</div>
+          <div className="stat-label">Evolución ({activeRange.desc})</div>
           <div className="stat-value" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '4px' }}>
             {indicator.changeType === 'up' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
             {indicator.change}

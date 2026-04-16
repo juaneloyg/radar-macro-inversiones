@@ -329,20 +329,14 @@ export default function Dashboard() {
         const diff = currentVal - oldVal;
         const pct = (diff / oldVal) * 100;
 
-        if (Math.abs(pct) < 0.01) {
+        if (Math.abs(pct) < 0.001) {
           changeType = 'flat';
         } else {
           changeType = pct > 0 ? 'up' : 'down';
         }
 
-        if (['tipos', 'curva', 'credito'].includes(ind.id)) {
-          const bps = Math.round(diff * 100);
-          changeText = `${bps > 0 ? '+' : ''}${bps} bps`;
-        } else if (ind.id === 'crecimiento') {
-          changeText = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}`;
-        } else {
-          changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
-        }
+        // Siempre usamos porcentaje para consistencia
+        changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
       }
     }
 
