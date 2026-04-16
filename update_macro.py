@@ -4,15 +4,15 @@ from supabase import create_client, Client
 from datetime import datetime, timedelta
 import ssl
 import json
+import os
 
 # Bypass SSL verify limits if running on older windows certs
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # --- CONFIGURACIÓN DE SUPABASE ---
-URL = "https://lkoizdlmsbwyzjvgtoej.supabase.co"
-# ATENCIÓN: Si tienes RLS activado (Row Level Security), la clave anónima (anon key) puede darte
-# un error de permisos al guardar (insert). Si te da error, pega aquí tu SERVICE ROLE KEY:
-KEY = "sb_publishable_xGHZRrtthdqIwAOanNtEgA_56QLeKmS"
+URL = os.environ.get("SUPABASE_URL", "https://lkoizdlmsbwyzjvgtoej.supabase.co")
+# Usa la SERVICE_ROLE_KEY para evitar errores de RLS (Row Level Security)
+KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_xGHZRrtthdqIwAOanNtEgA_56QLeKmS")
 
 supabase: Client = create_client(URL, KEY)
 

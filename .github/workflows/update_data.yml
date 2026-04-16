@@ -26,4 +26,7 @@ jobs:
           pip install yfinance pandas supabase requests
           
       - name: ¡Arrancar el Motor Radar Macro Inversiones!
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python update_macro.py
