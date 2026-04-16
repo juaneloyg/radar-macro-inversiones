@@ -116,10 +116,17 @@ export default function IndicatorDetail() {
     let changeType = baseIndicator.changeType;
 
     if (dbHistory && dbHistory.length > 0) {
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() - 7);
+      let daysToLookBack = activeRange.days;
+      if (daysToLookBack === 'YTD') {
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        daysToLookBack = Math.max(1, Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)));
+      }
 
-      // Encontrar el registro más cercano a hace 7 días
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - daysToLookBack);
+
+      // Encontrar el registro más cercano a la fecha objetivo
       let closest = dbHistory[0];
       let minDiff = Infinity;
 
@@ -138,20 +145,14 @@ export default function IndicatorDetail() {
         const diff = currentVal - oldVal;
         const pct = (diff / oldVal) * 100;
 
-        if (Math.abs(pct) < 0.01) {
+        if (Math.abs(pct) < 0.001) {
           changeType = 'flat';
         } else {
           changeType = pct > 0 ? 'up' : 'down';
         }
 
-        if (['tipos', 'curva', 'credito'].includes(id)) {
-          const bps = Math.round(diff * 100);
-          changeText = `${bps > 0 ? '+' : ''}${bps} bps`;
-        } else if (id === 'crecimiento') {
-          changeText = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}`;
-        } else {
-          changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
-        }
+        // Siempre usamos porcentaje para consistencia
+        changeText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
       }
     }
 
