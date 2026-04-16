@@ -163,7 +163,7 @@ export default function IndicatorDetail() {
       change: changeText,
       changeType: changeType
     };
-  }, [baseIndicator, dbSnap, dbHistory, id]);
+  }, [baseIndicator, dbSnap, dbHistory, id, activeRange]);
 
   const chartData = useMemo(() => {
     if (!dbHistory || dbHistory.length === 0) return [];
