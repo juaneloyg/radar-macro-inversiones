@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Brain, Database, RefreshCw, Github, CheckCircle, ArrowRight } from 'lucide-react';
+import { Target, Brain, Database, RefreshCw, Github, CheckCircle, ArrowRight, Activity } from 'lucide-react';
 
 export default function BaseFuentes() {
     return (

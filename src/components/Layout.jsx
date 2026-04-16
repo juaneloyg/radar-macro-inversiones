@@ -86,6 +86,16 @@ export default function Layout() {
               {ind.name}
             </NavLink>
           ))}
+
+          <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+            <NavLink
+              to="/base"
+              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+            >
+              <BookOpen size={18} />
+              Base y Fuentes
+            </NavLink>
+          </div>
         </nav>
       </aside>
 
