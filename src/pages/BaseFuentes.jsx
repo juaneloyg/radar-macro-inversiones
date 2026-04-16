@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Brain, Database, RefreshCw, Github, CheckCircle, ArrowRight, Activity } from 'lucide-react';
+import { Target, Brain, Database, RefreshCw, Terminal, CheckCircle, ArrowRight, Activity } from 'lucide-react';
 
 export default function BaseFuentes() {
     return (
@@ -78,7 +78,7 @@ export default function BaseFuentes() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
                         <div style={{ textAlign: 'center', flex: 1, minWidth: '150px' }}>
-                            <Github size={40} style={{ marginBottom: '12px', opacity: 0.8 }} />
+                            <Terminal size={40} style={{ marginBottom: '12px', opacity: 0.8 }} />
                             <h4>GitHub Actions</h4>
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Despierta el proceso diariamente</p>
                         </div>
