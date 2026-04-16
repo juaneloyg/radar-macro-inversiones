@@ -14,7 +14,7 @@ export default function IndicatorCard({ indicator }) {
     }
   };
 
-  const IconChange = () => {
+  const renderChangeIcon = () => {
     switch (indicator.changeType) {
       case 'up': return <ArrowUpRight size={16} color={getChangeColor()} />;
       case 'down': return <ArrowDownRight size={16} color={getChangeColor()} />;
@@ -74,7 +74,7 @@ export default function IndicatorCard({ indicator }) {
       <div className="indicator-card-value-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span className="indicator-card-value">{indicator.value}</span>
         <div className="indicator-card-change" style={{ color: getChangeColor(), display: 'flex', alignItems: 'center', gap: '2px', fontSize: '0.9rem', fontWeight: 600 }}>
-          <IconChange /> {indicator.change} <span style={{ fontSize: '0.7rem', opacity: 0.6, marginLeft: '2px' }}>7d</span>
+          {renderChangeIcon()} {indicator.change} <span style={{ fontSize: '0.7rem', opacity: 0.6, marginLeft: '2px' }}>7d</span>
         </div>
       </div>
 
