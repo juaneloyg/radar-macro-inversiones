@@ -34,9 +34,12 @@ export default function IndicatorCard({ indicator }) {
 
   return (
     <div className="card indicator-card" onClick={() => navigate(`/indicator/${indicator.id}`)}>
-      <div className="indicator-card-header" style={{ marginBottom: '12px' }}>
-        <h3 className="indicator-card-title">{indicator.name}</h3>
-        <span className="indicator-card-weight">Peso: {indicator.weight}%</span>
+      <div className="indicator-card-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <h3 className="indicator-card-title" style={{ margin: 0 }}>{indicator.name}</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'right', gap: '4px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fff', opacity: 0.9 }}>los últimos 7 días</span>
+          <span className="indicator-card-weight" style={{ margin: 0 }}>Peso: {indicator.weight}%</span>
+        </div>
       </div>
 
       <div className="indicator-card-value-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
