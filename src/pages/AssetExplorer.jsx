@@ -91,62 +91,104 @@ export default function AssetExplorer() {
       {/* Top Detail Panel (Selected Asset) */}
       {selectedAsset && (
         <div className="asset-detail-panel-top card" style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '32px' }}>
 
-            {/* Left Info Column */}
-            <div style={{ flex: '1 1 300px' }}>
-              <div className="detail-panel-header" style={{ border: 'none', marginBottom: '16px', padding: 0 }}>
+            {/* Left Column: Summary & Behavior */}
+            <div style={{ flex: '1 1 400px' }}>
+              <div className="detail-panel-header" style={{ border: 'none', marginBottom: '20px', padding: 0 }}>
                 <div className="detail-title-row">
                   <h2 className="detail-ticker">{selectedAsset.ticker}</h2>
                   <span className="detail-cat-badge">
                     {selectedAsset.category}
                   </span>
                 </div>
-                <p className="detail-asset-name">{selectedAsset.name}</p>
+                <p className="detail-asset-name" style={{ fontSize: '1.2rem', fontWeight: 600 }}>{selectedAsset.name}</p>
               </div>
 
-              <h4 className="detail-section-subtitle" style={{ fontSize: '0.9rem', opacity: 0.8 }}>Comportamiento Esperado</h4>
-              <div className="behavior-box" style={{ background: 'rgba(0,0,0,0.2)', marginBottom: '0' }}>
-                <p className="behavior-text" style={{ fontSize: '1rem' }}>
+              <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', marginBottom: '24px' }}>
+                <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  📌 {selectedAsset.id === 'gold' ? 'El oro sube con el miedo y baja cuando suben los tipos o el dólar.' : selectedAsset.expectedBehavior.split('.')[0] + '.'}
+                </p>
+              </div>
+
+              <h4 className="detail-section-subtitle" style={{ fontSize: '0.9rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Comportamiento Esperado</h4>
+              <div className="behavior-box" style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px' }}>
+                <p className="behavior-text" style={{ fontSize: '0.95rem', margin: 0 }}>
                   {selectedAsset.expectedBehavior}
                 </p>
               </div>
             </div>
 
-            {/* Middle Sensitivity Column */}
-            <div style={{ flex: '0 0 320px' }}>
-              <h4 className="detail-section-subtitle" style={{ fontSize: '0.9rem', opacity: 0.8 }}>Matriz de Sensibilidad</h4>
-              <div className="sensitivity-rows" style={{ background: 'rgba(0,0,0,0.1)', padding: '16px', borderRadius: '12px' }}>
-                <div className="sensitivity-row">
-                  <span className="sensitivity-label">
-                    <Percent size={16} /> Tipos de Interés
-                  </span>
-                  <span className="sensitivity-value">{selectedAsset.intRateRelation}</span>
+            {/* Middle Column: Visual Reactivity (Causa -> Efecto) */}
+            <div style={{ flex: '1 1 350px' }}>
+              <h3 style={{ fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                💡 Qué mueve {selectedAsset.id === 'gold' ? 'el oro' : `este activo`}
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Bloque Bajista */}
+                <div style={{ background: 'rgba(239, 68, 68, 0.05)', padding: '16px', borderRadius: '12px', borderLeft: '4px solid var(--status-defensive)' }}>
+                  <h4 style={{ color: 'var(--status-defensive)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '12px' }}>🔴 Presión bajista</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1rem' }}>
+                    <div title="Tipos altos hacen menos atractivo el activo (no genera rendimiento)">⬆️ Tipos de interés → ⬇️ {selectedAsset.name} {selectedAsset.intRateRelation.includes('fuerte') ? '(fuerte)' : ''}</div>
+                    <div title="Un dólar fuerte presiona el precio del activo">⬆️ Dólar → ⬇️ {selectedAsset.name} {selectedAsset.usdRelation.includes('fuerte') ? '(fuerte)' : ''}</div>
+                  </div>
                 </div>
-                <div className="sensitivity-row">
-                  <span className="sensitivity-label">
-                    <Activity size={16} /> VIX (Volatilidad)
-                  </span>
-                  <span className="sensitivity-value">{selectedAsset.vixRelation}</span>
+
+                {/* Bloque Alcista */}
+                <div style={{ background: 'rgba(34, 197, 94, 0.05)', padding: '16px', borderRadius: '12px', borderLeft: '4px solid var(--status-favorable)' }}>
+                  <h4 style={{ color: 'var(--status-favorable)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '12px' }}>🟢 Presión alcista</h4>
+                  <div style={{ fontSize: '1rem' }} title="El activo sube cuando hay miedo extremo en los mercados">
+                    ⬆️ Miedo / crisis (VIX) → ⬆️ {selectedAsset.name} {selectedAsset.vixRelation === 'Directa en extremos' ? '(en pánico)' : ''}
+                  </div>
                 </div>
-                <div className="sensitivity-row">
-                  <span className="sensitivity-label">
-                    <DollarSign size={16} /> Dólar (DXY)
-                  </span>
-                  <span className="sensitivity-value">{selectedAsset.usdRelation}</span>
+              </div>
+
+              {/* Visual Bars Section */}
+              <div style={{ marginTop: '24px' }}>
+                <h4 className="detail-section-subtitle" style={{ fontSize: '0.85rem', opacity: 0.8 }}>📊 Reacción {selectedAsset.id === 'gold' ? 'del oro' : 'estimada'}</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.9rem' }}>Tipos de interés</span>
+                    <span style={{ color: 'var(--status-defensive)', fontWeight: 700 }}>🔴⬇️⬇️⬇️</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.9rem' }}>Dólar (DXY)</span>
+                    <span style={{ color: 'var(--status-defensive)', fontWeight: 700 }}>🔴⬇️⬇️⬇️</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.9rem' }}>Miedo (VIX)</span>
+                    <span style={{ color: 'var(--status-favorable)', fontWeight: 700 }}>🟢⬆️⬆️ {selectedAsset.id === 'gold' ? '(solo crisis)' : ''}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Tags Column */}
-            <div style={{ flex: '0 0 200px' }}>
-              <h4 className="detail-section-subtitle" style={{ fontSize: '0.9rem', opacity: 0.8 }}>Etiquetas Macro</h4>
-              <div className="detail-tags" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {selectedAsset.tags.map(tag => (
-                  <span key={tag} className="detail-tag" style={{ textAlign: 'center', width: '100%' }}>
-                    {tag}
-                  </span>
-                ))}
+            {/* Right Column: Humanized Tags */}
+            <div style={{ flex: '0 0 240px' }}>
+              <h4 className="detail-section-subtitle" style={{ fontSize: '0.9rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Etiquetas Macro</h4>
+              <div className="detail-tags" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {selectedAsset.tags.map(tag => {
+                  let humanTag = tag;
+                  if (tag === 'Refugio') humanTag = '🛡️ Refugio en crisis';
+                  if (tag === 'Anti-fiat') humanTag = '💸 Protección devaluación';
+                  if (tag === 'Inflación') humanTag = '🔥 Cobertura inflación';
+                  if (tag === 'Industrial') humanTag = '🏗️ Demanda industrial';
+                  if (tag === 'Pro-cíclico') humanTag = '📈 Sube con economía';
+
+                  return (
+                    <span key={tag} className="detail-tag" style={{
+                      padding: '10px 16px',
+                      borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.05)',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                      {humanTag}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           </div>
