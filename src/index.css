@@ -146,10 +146,18 @@ a {
 }
 
 .sidebar-nav {
-  padding: 0 16px 24px 16px;
+  padding: 0 16px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
 }
 
 .nav-item {
