@@ -64,6 +64,13 @@ export default function Layout() {
             Explorador de Activos
           </NavLink>
 
+          <NavLink
+            to="/base"
+            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          >
+            <BookOpen size={18} />
+            Base y Fuentes
+          </NavLink>
 
           <div style={{ marginTop: '20px', marginBottom: '8px', paddingLeft: '12px', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
             Indicadores
