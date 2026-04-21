@@ -26,7 +26,7 @@ yf_tickers = {
 
 # 2. FRED St. Louis (Mezcla de diario, semanal y mensual)
 fred_tickers = {
-    "credito": "BAMLH0A0HYM2", # High Yield Spreads (Diario)
+    "credito": "BAA10Y", # Corporate Credit Spreads (Baa) - Full history
     "curva": "T10Y2Y",         # Curva 10Y-2Y (Diario)
     "inflacion": "T5YIFR",     # Expectativas 5 años (Diario)
     "liquidez": "WALCL",       # Balance FED (Semanal)
@@ -89,8 +89,12 @@ master_df = master_df.sort_index()
 # Rellenar huecos para que los datos semanales/mensuales de FRED se vean continuos
 master_df.ffill(inplace=True)
 
-# Muy importante: SOLO eliminar si el VIX es NaN (es nuestra ancla temporal)
-master_df.dropna(subset=['vix'], inplace=True)
+# Limpiar filas completamente vacías (que no tengan ningún indicador)
+master_df.dropna(how='all', inplace=True)
+
+# Solo queremos filas que tengan al menos una fecha válida, 
+# pero ya no forzamos que el VIX esté presente para no recortar histórico
+# si otros indicadores (como Crédito) tienen más historial.
 
 # --- INSERCIÓN EN SUPABASE ---
 print(f"Empezando inyección a Supabase (Total filas: {len(master_df)})...")

@@ -1,11 +1,11 @@
 // initial mock data and configuration para Radar Macro
 
 export const weights = {
-  liquidez: 20, 
-  vix: 15,      
-  credito: 10,  
-  tipos: 10,    
-  curva: 10,    
+  liquidez: 20,
+  vix: 15,
+  credito: 10,
+  tipos: 10,
+  curva: 10,
   dolar: 10,
   inflacion: 10,
   crecimiento: 15
@@ -17,19 +17,19 @@ const generateTrendData = (start, years, trend = 0, volatility = 1) => {
   let current = start;
   const data = [];
   const today = new Date();
-  
+
   for (let i = points; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     current = current + (Math.random() - 0.5) * volatility + trend;
-    
-    // Evitar valores negativos si no tiene sentido o ajustarlo natural
-    if(current < 0.1 && volatility > 0.5) current = 0.5;
 
-    data.push({ 
-      date: d.toISOString().split('T')[0], 
+    // Evitar valores negativos si no tiene sentido o ajustarlo natural
+    if (current < 0.1 && volatility > 0.5) current = 0.5;
+
+    data.push({
+      date: d.toISOString().split('T')[0],
       timestamp: d.getTime(),
-      value: Number(current.toFixed(2)) 
+      value: Number(current.toFixed(2))
     });
   }
   return data;
@@ -56,7 +56,7 @@ export const indicatorsData = [
     value: "14.20",
     change: "-5.4%",
     changeType: "down", // en el VIX, bajar es favorable
-    status: "favorable", 
+    status: "favorable",
     subscore: 75,
     weight: weights.vix,
     description: "Mide la expectativa de volatilidad del mercado de opciones del S&P 500. Valores por debajo de 20 indican un entorno de bajo estrés.",
@@ -65,14 +65,14 @@ export const indicatorsData = [
   {
     id: "credito",
     name: "Crédito (Spreads)",
-    detailName: "High Yield Credit Spreads (OAS)",
+    detailName: "Corporate Credit Spreads (Baa)",
     value: "3.45%",
     change: "+2 bps",
     changeType: "flat",
     status: "neutral",
     subscore: 60,
     weight: weights.credito,
-    description: "Es lo que el mercado te cobra de mas por prestarle dinero a empresas con riesgo en lugar de a un gobierno seguro. Ejemplo sencillo: Si al gobierno le prestas al 3% y a una empresa arriesgada al 6%, ese +3% extra es el spread. Cómo leerlo: Bajo significa que todo va bien, no hay miedo. Alto significa cuidado, pueden venir problemas. En la práctica: Si sube mucho, el mercado está nervioso; si baja, hay confianza y ganas de asumir riesgo.",
+    description: "Mide el diferencial de tipos entre los bonos corporativos con calificación Baa (grado de inversión) y los bonos del tesoro a 10 años. Es un indicador clave del riesgo de crédito; cuando el spread sube, el mercado percibe mayor riesgo de impago y desconfianza en el ciclo económico.",
     history: generateTrendData(5, 25, -0.0002, 0.1),
   },
   {
