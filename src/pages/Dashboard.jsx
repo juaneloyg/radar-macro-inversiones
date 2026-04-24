@@ -125,12 +125,12 @@ export default function Dashboard() {
         setMacroData(data?.[0] ?? null);
       }
 
-      // Descargamos los últimos 1500 puntos del historial (para cubrir los 12+ indicadores)
+      // Descargamos los últimos 2000 puntos del historial (para cubrir los 12+ indicadores)
       const { data: histData, error: histError } = await supabase
         .from('macro_history')
         .select('date, indicator_id, value')
         .order('date', { ascending: false })
-        .limit(1500);
+        .limit(2000);
 
       if (histData) {
         const grouped = {};
@@ -162,19 +162,60 @@ export default function Dashboard() {
       }
     });
 
+    const normalize = (id, value) => {
+      const val = safeNumber(value);
+      if (val === 0 && !['curva', 'crecimiento'].includes(id)) return 50;
+
+      switch (id) {
+        case 'liquidez':
+          // WALCL (en millones): 4,000,000 -> 0, 9,000,000 -> 100
+          return Math.max(0, Math.min(100, ((val - 4000000) / 5000000) * 100));
+        case 'vix':
+          // VIX: 40 -> 0, 10 -> 100
+          return Math.max(0, Math.min(100, ((40 - val) / 30) * 100));
+        case 'move':
+          // MOVE: 180 -> 0, 60 -> 100
+          return Math.max(0, Math.min(100, ((180 - val) / 120) * 100));
+        case 'credito':
+        case 'cds_us':
+        case 'cds_eu':
+        case 'cds_em':
+          // Spreads/OAS (%): 8% -> 0, 0% -> 100
+          return Math.max(0, Math.min(100, ((8 - val) / 8) * 100));
+        case 'tipos':
+          // US10Y Yield (%): 0% -> 0, 6% -> 100
+          return Math.max(0, Math.min(100, (val / 6) * 100));
+        case 'curva':
+          // Spread 10Y-2Y (%): -1% -> 0, 2% -> 100
+          return Math.max(0, Math.min(100, ((val + 1) / 3) * 100));
+        case 'dolar':
+          // DXY: 120 -> 0, 90 -> 100
+          return Math.max(0, Math.min(100, ((115 - val) / 25) * 100));
+        case 'inflacion':
+          // Expectativas (%): 5% -> 0, 0% -> 100
+          return Math.max(0, Math.min(100, ((5 - val) / 5) * 100));
+        case 'crecimiento':
+          // CFNAI: -2 -> 0, 1 -> 100
+          return Math.max(0, Math.min(100, ((val + 2) / 3) * 100));
+        default:
+          return 50;
+      }
+    };
+
+    const formatDisplayValue = (id, value) => {
+      const val = safeNumber(value);
+      if (id === 'liquidez') return `$${(val / 1000000).toFixed(2)}T`;
+      if (['vix', 'move', 'dolar', 'crecimiento'].includes(id)) return val.toFixed(2);
+      return `${val.toFixed(2)}%`;
+    };
+
     // Score dinámico basado en fallbackIndicators y weights
     let totalScore = 0;
     const weightedBreakdown = [];
 
     fallbackIndicators.forEach(ind => {
-      const val = safeNumber(currentValues[ind.id], 50);
-      let subscore = val;
-
-      // Invertir score para indicadores donde "subir es malo" (VIX, Spreads, DXY, Inflación)
-      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(ind.id)) {
-        subscore = 100 - val;
-      }
-
+      const rawVal = currentValues[ind.id] !== undefined ? currentValues[ind.id] : 50;
+      const subscore = normalize(ind.id, rawVal);
       const weight = ind.weight || 0;
       const contribution = (subscore * weight) / 100;
       totalScore += contribution;
@@ -184,28 +225,29 @@ export default function Dashboard() {
         name: ind.name,
         weight: weight,
         scoreBase: subscore.toFixed(1),
-        contribution: contribution.toFixed(1)
+        contribution: contribution.toFixed(1),
+        displayValue: formatDisplayValue(ind.id, rawVal)
       });
     });
 
     const computedScore = clampScore(totalScore);
     const status = getStatusFromScore(computedScore);
 
-    // Extraer inflación y crecimiento para la interpretación (usando promedios si hay varios)
-    const inflationScore = 100 - (currentValues['inflacion'] || 50);
-    const growthScore = currentValues['crecimiento'] || 50;
+    // Extraer promedios para la interpretación
+    const inflationScore = normalize('inflacion', currentValues['inflacion'] || 2.5);
+    const growthScore = normalize('crecimiento', currentValues['crecimiento'] || 0);
 
     const prompt = generateMacroPrompt(
       {
         ...macroData,
-        liquidity: currentValues['liquidez'] || 50,
-        vix: currentValues['vix'] || 50,
-        credit_spreads: currentValues['credito'] || 50,
-        interest_rates: currentValues['tipos'] || 50,
-        yield_curve: currentValues['curva'] || 50,
-        dxy: currentValues['dolar'] || 50,
-        inflation: currentValues['inflacion'] || 50,
-        growth: currentValues['crecimiento'] || 50
+        liquidity: formatDisplayValue('liquidez', currentValues['liquidez']),
+        vix: formatDisplayValue('vix', currentValues['vix']),
+        credit_spreads: formatDisplayValue('credito', currentValues['credito']),
+        interest_rates: formatDisplayValue('tipos', currentValues['tipos']),
+        yield_curve: formatDisplayValue('curva', currentValues['curva']),
+        dxy: formatDisplayValue('dolar', currentValues['dolar']),
+        inflation: formatDisplayValue('inflacion', currentValues['inflacion']),
+        growth: formatDisplayValue('crecimiento', currentValues['crecimiento'])
       },
       computedScore,
       status.text
@@ -217,8 +259,8 @@ export default function Dashboard() {
       status,
       weightedBreakdown,
       prompt,
-      inflationScore,
-      growthScore
+      normalize,
+      formatDisplayValue
     };
   }, [macroData, macroHistory]);
 
@@ -227,12 +269,9 @@ export default function Dashboard() {
     if (!derived || !macroHistory) return [];
 
     return fallbackIndicators.map((ind) => {
-      const realValue = derived.currentValues[ind.id] !== undefined ? derived.currentValues[ind.id] : ind.value;
-      let subscore = safeNumber(realValue, 50);
-
-      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(ind.id)) {
-        subscore = 100 - subscore;
-      }
+      const rawValue = derived.currentValues[ind.id] !== undefined ? derived.currentValues[ind.id] : 0;
+      const realValue = derived.formatDisplayValue(ind.id, rawValue);
+      const subscore = derived.normalize(ind.id, rawValue);
 
       const hist = macroHistory[ind.id] || ind.history;
       const latestDate = hist?.[hist.length - 1]?.date;
@@ -439,7 +478,7 @@ export default function Dashboard() {
             {derived.weightedBreakdown.map((ind) => (
               <div className="breakdown-row" key={ind.id}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{ind.name}</div>
+                  <div style={{ fontWeight: 600 }}>{ind.name} <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 400 }}>({ind.displayValue})</span></div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                     Peso: {ind.weight}%
                   </div>

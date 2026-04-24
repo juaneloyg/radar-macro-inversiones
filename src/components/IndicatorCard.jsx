@@ -8,8 +8,8 @@ export default function IndicatorCard({ indicator }) {
 
   const getChangeColor = () => {
     switch (indicator.changeType) {
-      case 'up': return indicator.id === 'vix' ? 'var(--status-defensive)' : 'var(--status-favorable)';
-      case 'down': return indicator.id === 'vix' ? 'var(--status-favorable)' : 'var(--status-defensive)';
+      case 'up': return ['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em'].includes(indicator.id) ? 'var(--status-defensive)' : 'var(--status-favorable)';
+      case 'down': return ['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em'].includes(indicator.id) ? 'var(--status-favorable)' : 'var(--status-defensive)';
       default: return 'var(--text-secondary)';
     }
   };

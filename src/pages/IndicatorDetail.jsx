@@ -95,13 +95,40 @@ export default function IndicatorDetail() {
     let realScore = baseIndicator.subscore;
 
     if (dbHistory && dbHistory.length > 0) {
-      realVal = dbHistory[dbHistory.length - 1].value;
-      realScore = safeNumber(realVal);
+      const rawVal = dbHistory[dbHistory.length - 1].value;
 
-      // Invertir score para indicadores donde "subir es malo"
-      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(id)) {
-        realScore = 100 - realScore;
-      }
+      const normalize = (id, val) => {
+        const v = parseFloat(val);
+        if (isNaN(v)) return 50;
+        if (v === 0 && !['curva', 'crecimiento'].includes(id)) return 50;
+
+        switch (id) {
+          case 'liquidez': return Math.max(0, Math.min(100, ((v - 4000000) / 5000000) * 100));
+          case 'vix': return Math.max(0, Math.min(100, ((40 - v) / 30) * 100));
+          case 'move': return Math.max(0, Math.min(100, ((180 - v) / 120) * 100));
+          case 'credito':
+          case 'cds_us':
+          case 'cds_eu':
+          case 'cds_em':
+            return Math.max(0, Math.min(100, ((8 - v) / 8) * 100));
+          case 'tipos': return Math.max(0, Math.min(100, (v / 6) * 100));
+          case 'curva': return Math.max(0, Math.min(100, ((v + 1) / 3) * 100));
+          case 'dolar': return Math.max(0, Math.min(100, ((115 - v) / 25) * 100));
+          case 'inflacion': return Math.max(0, Math.min(100, ((5 - v) / 5) * 100));
+          case 'crecimiento': return Math.max(0, Math.min(100, ((v + 2) / 3) * 100));
+          default: return 50;
+        }
+      };
+
+      const formatValue = (id, v) => {
+        const val = parseFloat(v);
+        if (id === 'liquidez') return `$${(val / 1000000).toFixed(2)}T`;
+        if (['vix', 'move', 'dolar', 'crecimiento'].includes(id)) return val.toFixed(2);
+        return `${val.toFixed(2)}%`;
+      };
+
+      realVal = formatValue(id, rawVal);
+      realScore = normalize(id, rawVal);
     }
 
     // Calcular variación de últimos 7 días
@@ -210,8 +237,8 @@ export default function IndicatorDetail() {
   const currentStatus = getStatusFromScore(indicator.subscore);
 
   const getChangeColor = () => {
-    if (indicator.changeType === 'up') return indicator.id === 'vix' ? 'var(--status-defensive)' : 'var(--status-favorable)';
-    if (indicator.changeType === 'down') return indicator.id === 'vix' ? 'var(--status-favorable)' : 'var(--status-defensive)';
+    if (indicator.changeType === 'up') return ['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em'].includes(indicator.id) ? 'var(--status-defensive)' : 'var(--status-favorable)';
+    if (indicator.changeType === 'down') return ['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em'].includes(indicator.id) ? 'var(--status-favorable)' : 'var(--status-defensive)';
     return 'var(--text-secondary)';
   };
 

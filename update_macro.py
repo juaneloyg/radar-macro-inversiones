@@ -33,8 +33,8 @@ fred_tickers = {
     "liquidez": "WALCL",       # Balance FED (Semanal)
     "crecimiento": "CFNAI",     # Chicago Fed Nat Activity (Mensual)
     "cds_us": "BAMLH0A0HYM2",  # US High Yield OAS (Proxy CDS US)
-    "cds_eu": "BAMLEURH0A0HYM2", # Euro High Yield OAS (Proxy CDS EU)
-    "cds_em": "BAMLEMCBPIT2YEY"  # Emerging Markets Corporate Plus Index OAS
+    "cds_eu": "BAMLHE00EHYIOAS", # Euro High Yield OAS (Proxy CDS EU) - CORRECTED
+    "cds_em": "BAMLEMCBPIOAS"  # Emerging Markets Corporate Plus Index OAS - CORRECTED
 }
 
 print("Arrancando descarga de 25 años de histórico...")
