@@ -125,12 +125,12 @@ export default function Dashboard() {
         setMacroData(data?.[0] ?? null);
       }
 
-      // Descargamos los últimos 800 puntos del historial (unos 100 días para cada uno de los 8 indicadores)
+      // Descargamos los últimos 1500 puntos del historial (para cubrir los 12+ indicadores)
       const { data: histData, error: histError } = await supabase
         .from('macro_history')
         .select('date, indicator_id, value')
         .order('date', { ascending: false })
-        .limit(800);
+        .limit(1500);
 
       if (histData) {
         const grouped = {};
@@ -151,123 +151,97 @@ export default function Dashboard() {
   }, []);
 
   const derived = useMemo(() => {
-    if (!macroData) return null;
+    if (!macroHistory) return null;
 
-    const liquidity = safeNumber(macroData.liquidity);
-    const vix = safeNumber(macroData.vix);
-    const credit = safeNumber(macroData.credit_spreads);
-    const rates = safeNumber(macroData.interest_rates);
-    const curve = safeNumber(macroData.yield_curve);
-    const dxy = safeNumber(macroData.dxy);
-    const inflation = safeNumber(macroData.inflation, 50);
-    const growth = safeNumber(macroData.growth, 50);
+    // Calculamos los valores actuales basados en el último dato de historial para cada indicador
+    const currentValues = {};
+    Object.keys(macroHistory).forEach(id => {
+      const hist = macroHistory[id];
+      if (hist && hist.length > 0) {
+        currentValues[id] = hist[hist.length - 1].value;
+      }
+    });
 
-    // Score extendido con 8 factores
-    const computedScore = clampScore(
-      liquidity * 0.20 +
-      (100 - vix) * 0.15 +
-      (100 - credit) * 0.10 +
-      rates * 0.10 +
-      curve * 0.10 +
-      (100 - dxy) * 0.10 +
-      (100 - inflation) * 0.10 +
-      growth * 0.15
-    );
+    // Score dinámico basado en fallbackIndicators y weights
+    let totalScore = 0;
+    const weightedBreakdown = [];
 
+    fallbackIndicators.forEach(ind => {
+      const val = safeNumber(currentValues[ind.id], 50);
+      let subscore = val;
+
+      // Invertir score para indicadores donde "subir es malo" (VIX, Spreads, DXY, Inflación)
+      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(ind.id)) {
+        subscore = 100 - val;
+      }
+
+      const weight = ind.weight || 0;
+      const contribution = (subscore * weight) / 100;
+      totalScore += contribution;
+
+      weightedBreakdown.push({
+        id: ind.id,
+        name: ind.name,
+        weight: weight,
+        scoreBase: subscore.toFixed(1),
+        contribution: contribution.toFixed(1)
+      });
+    });
+
+    const computedScore = clampScore(totalScore);
     const status = getStatusFromScore(computedScore);
 
-    const weightedBreakdown = [
-      { id: 'liquidez', name: 'Liquidez Global', weight: 20, scoreBase: liquidity, contribution: ((liquidity * 20) / 100).toFixed(1) },
-      { id: 'vix', name: 'Volatilidad (VIX)', weight: 15, scoreBase: (100 - vix), contribution: (((100 - vix) * 15) / 100).toFixed(1) },
-      { id: 'credito', name: 'Crédito (Spreads)', weight: 10, scoreBase: (100 - credit), contribution: (((100 - credit) * 10) / 100).toFixed(1) },
-      { id: 'tipos', name: 'Tipos de Interés', weight: 10, scoreBase: rates, contribution: ((rates * 10) / 100).toFixed(1) },
-      { id: 'curva', name: 'Curva de Tipos', weight: 10, scoreBase: curve, contribution: ((curve * 10) / 100).toFixed(1) },
-      { id: 'dolar', name: 'Dólar (DXY)', weight: 10, scoreBase: (100 - dxy), contribution: (((100 - dxy) * 10) / 100).toFixed(1) },
-      { id: 'inflacion', name: 'Inflación / Expectativas', weight: 10, scoreBase: (100 - inflation), contribution: (((100 - inflation) * 10) / 100).toFixed(1) },
-      { id: 'crecimiento', name: 'Crecimiento / Sorpresa Macro', weight: 15, scoreBase: growth, contribution: ((growth * 15) / 100).toFixed(1) },
-    ];
+    // Extraer inflación y crecimiento para la interpretación (usando promedios si hay varios)
+    const inflationScore = 100 - (currentValues['inflacion'] || 50);
+    const growthScore = currentValues['crecimiento'] || 50;
 
     const prompt = generateMacroPrompt(
       {
         ...macroData,
-        liquidity,
-        vix,
-        credit_spreads: credit,
-        interest_rates: rates,
-        yield_curve: curve,
-        dxy,
-        inflation,
-        growth
+        liquidity: currentValues['liquidez'] || 50,
+        vix: currentValues['vix'] || 50,
+        credit_spreads: currentValues['credito'] || 50,
+        interest_rates: currentValues['tipos'] || 50,
+        yield_curve: currentValues['curva'] || 50,
+        dxy: currentValues['dolar'] || 50,
+        inflation: currentValues['inflacion'] || 50,
+        growth: currentValues['crecimiento'] || 50
       },
       computedScore,
       status.text
     );
 
     return {
-      liquidity,
-      vix,
-      credit,
-      rates,
-      curve,
-      dxy,
-      inflation,
-      growth,
+      currentValues,
       computedScore,
       status,
       weightedBreakdown,
-      prompt
+      prompt,
+      inflationScore,
+      growthScore
     };
-  }, [macroData]);
+  }, [macroData, macroHistory]);
 
   // Hook para calcular indicadores reales (Mover arriba para cumplir reglas de hooks)
   const realIndicators = useMemo(() => {
-    if (!derived) return [];
+    if (!derived || !macroHistory) return [];
 
     return fallbackIndicators.map((ind) => {
-      let realValue = ind.value;
-      let subscore = ind.subscore;
+      const realValue = derived.currentValues[ind.id] !== undefined ? derived.currentValues[ind.id] : ind.value;
+      let subscore = safeNumber(realValue, 50);
 
-      if (ind.id === 'liquidez') {
-        realValue = derived.liquidity;
-        subscore = derived.liquidity;
-      }
-      if (ind.id === 'vix') {
-        realValue = derived.vix;
-        subscore = 100 - derived.vix;
-      }
-      if (ind.id === 'credito') {
-        realValue = derived.credit;
-        subscore = 100 - derived.credit;
-      }
-      if (ind.id === 'tipos') {
-        realValue = derived.rates;
-        subscore = derived.rates;
-      }
-      if (ind.id === 'curva') {
-        realValue = derived.curve;
-        subscore = derived.curve;
-      }
-      if (ind.id === 'dolar') {
-        realValue = derived.dxy;
-        subscore = 100 - derived.dxy;
-      }
-      if (ind.id === 'inflacion') {
-        realValue = derived.inflation;
-        subscore = 100 - derived.inflation;
-      }
-      if (ind.id === 'crecimiento') {
-        realValue = derived.growth;
-        subscore = derived.growth;
+      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(ind.id)) {
+        subscore = 100 - subscore;
       }
 
-      const hist = macroHistory?.[ind.id] || ind.history;
+      const hist = macroHistory[ind.id] || ind.history;
       const latestDate = hist?.[hist.length - 1]?.date;
 
       // Calcular variación de últimos 7 días
       let changeText = ind.change;
       let changeType = ind.changeType;
 
-      if (macroHistory && macroHistory[ind.id] && macroHistory[ind.id].length > 0) {
+      if (hist && hist.length > 0) {
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() - 7);
 
@@ -283,9 +257,9 @@ export default function Dashboard() {
 
         const oldVal = closest.value;
         const currentVal = hist[hist.length - 1]?.value;
-        if (oldVal && oldVal !== 0 && currentVal !== undefined) {
+        if (oldVal !== undefined && currentVal !== undefined) {
           const diff = currentVal - oldVal;
-          const pct = (diff / oldVal) * 100;
+          const pct = oldVal !== 0 ? (diff / oldVal) * 100 : 0;
 
           if (Math.abs(pct) < 0.001) {
             changeType = 'flat';

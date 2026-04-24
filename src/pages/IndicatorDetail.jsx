@@ -94,21 +94,13 @@ export default function IndicatorDetail() {
     let realVal = baseIndicator.value;
     let realScore = baseIndicator.subscore;
 
-    if (dbSnap) {
-      const colMap = {
-        'liquidez': { v: dbSnap.liquidity, s: dbSnap.liquidity },
-        'vix': { v: dbSnap.vix, s: 100 - dbSnap.vix },
-        'credito': { v: dbSnap.credit_spreads, s: 100 - dbSnap.credit_spreads },
-        'tipos': { v: dbSnap.interest_rates, s: dbSnap.interest_rates },
-        'curva': { v: dbSnap.yield_curve, s: dbSnap.yield_curve },
-        'dolar': { v: dbSnap.dxy, s: 100 - dbSnap.dxy },
-        'inflacion': { v: dbSnap.inflation, s: 100 - dbSnap.inflation },
-        'crecimiento': { v: dbSnap.growth, s: dbSnap.growth }
-      };
+    if (dbHistory && dbHistory.length > 0) {
+      realVal = dbHistory[dbHistory.length - 1].value;
+      realScore = safeNumber(realVal);
 
-      if (colMap[id]) {
-        realVal = colMap[id].v;
-        realScore = safeNumber(colMap[id].s);
+      // Invertir score para indicadores donde "subir es malo"
+      if (['vix', 'move', 'credito', 'cds_us', 'cds_eu', 'cds_em', 'dolar', 'inflacion'].includes(id)) {
+        realScore = 100 - realScore;
       }
     }
 

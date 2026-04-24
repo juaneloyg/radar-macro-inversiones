@@ -21,7 +21,8 @@ supabase: Client = create_client(URL, KEY)
 yf_tickers = {
     "vix": "^VIX",
     "dolar": "DX-Y.NYB",
-    "tipos": "^TNX"
+    "tipos": "^TNX",
+    "move": "^MOVE"
 }
 
 # 2. FRED St. Louis (Mezcla de diario, semanal y mensual)
@@ -30,7 +31,10 @@ fred_tickers = {
     "curva": "T10Y2Y",         # Curva 10Y-2Y (Diario)
     "inflacion": "T5YIFR",     # Expectativas 5 años (Diario)
     "liquidez": "WALCL",       # Balance FED (Semanal)
-    "crecimiento": "CFNAI"     # Chicago Fed Nat Activity (Mensual)
+    "crecimiento": "CFNAI",     # Chicago Fed Nat Activity (Mensual)
+    "cds_us": "BAMLH0A0HYM2",  # US High Yield OAS (Proxy CDS US)
+    "cds_eu": "BAMLEURH0A0HYM2", # Euro High Yield OAS (Proxy CDS EU)
+    "cds_em": "BAMLEMCBPIT2YEY"  # Emerging Markets Corporate Plus Index OAS
 }
 
 print("Arrancando descarga de 25 años de histórico...")

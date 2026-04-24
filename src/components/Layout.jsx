@@ -11,7 +11,11 @@ const iconMap = {
   curva: <BarChart3 size={18} />,
   dolar: <DollarSign size={18} />,
   inflacion: <Flame size={18} />,
-  crecimiento: <LineChart size={18} />
+  crecimiento: <LineChart size={18} />,
+  move: <Activity size={18} />,
+  cds_us: <TrendingUp size={18} />,
+  cds_eu: <TrendingUp size={18} />,
+  cds_em: <TrendingUp size={18} />
 };
 
 export default function Layout() {
