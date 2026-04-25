@@ -61,7 +61,7 @@ export default function AssetExplorer() {
           .select('date, value')
           .eq('indicator_id', syncId)
           .order('date', { ascending: false })
-          .limit(5000);
+          .limit(10000);
 
         if (error) throw error;
         setDbHistory(data.sort((a, b) => new Date(a.date) - new Date(b.date)));
@@ -243,7 +243,16 @@ export default function AssetExplorer() {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                         <XAxis
                           dataKey="date"
-                          hide
+                          stroke="var(--text-muted)"
+                          fontSize={10}
+                          tickFormatter={(val) => {
+                            const d = new Date(val);
+                            if (activeRange.days <= 180) return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                            return d.getFullYear();
+                          }}
+                          minTickGap={30}
+                          axisLine={false}
+                          tickLine={false}
                         />
                         <YAxis
                           hide
