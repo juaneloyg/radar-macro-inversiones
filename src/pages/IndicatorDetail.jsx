@@ -300,15 +300,22 @@ export default function IndicatorDetail() {
         <div className="chart-controls">
           <h3 className="chart-title">Evolución ({activeRange.desc})</h3>
           <div className="range-picker">
-            {TIME_RANGES.map((r) => (
-              <button
-                key={r.label}
-                className={`range-btn ${activeRange.label === r.label ? 'active' : ''}`}
-                onClick={() => setActiveRange(r)}
-              >
-                {r.label}
-              </button>
-            ))}
+            {TIME_RANGES
+              .filter(r => {
+                if (['cds_us', 'cds_eu', 'cds_em'].includes(id)) {
+                  return r.days <= 1095 || r.days === 'YTD'; // Solo hasta 3 años
+                }
+                return true;
+              })
+              .map((r) => (
+                <button
+                  key={r.label}
+                  className={`range-btn ${activeRange.label === r.label ? 'active' : ''}`}
+                  onClick={() => setActiveRange(r)}
+                >
+                  {r.label}
+                </button>
+              ))}
           </div>
         </div>
 
