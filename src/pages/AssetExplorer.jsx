@@ -8,6 +8,8 @@ const TIME_RANGES = [
   { label: '1M', days: 30, desc: '1 mes' },
   { label: '6M', days: 180, desc: '6 meses' },
   { label: '1A', days: 365, desc: '1 año' },
+  { label: '2A', days: 730, desc: '2 años' },
+  { label: '3A', days: 1095, desc: '3 años' },
   { label: '5A', days: 1825, desc: '5 años' },
   { label: '10A', days: 3650, desc: '10 años' },
 ];
