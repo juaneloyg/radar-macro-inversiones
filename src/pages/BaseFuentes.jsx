@@ -55,15 +55,15 @@ export default function BaseFuentes() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
                         <div style={{ background: 'var(--surface-highlight)', padding: '20px', borderRadius: '12px' }}>
                             <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Mercados de Capitales</h4>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Yahoo Finance (VIX, Dólar DXY, Materias Primas).</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Yahoo Finance: VIX (Volatilidad S&P), MOVE (Volatilidad de Bonos), Dólar DXY y Tipos de Interés (TNX).</p>
                         </div>
                         <div style={{ background: 'var(--surface-highlight)', padding: '20px', borderRadius: '12px' }}>
-                            <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Renta Fija y Tipos</h4>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Tesoro de EE.UU., Spreads de crédito High Yield y Curvas soberanas.</p>
+                            <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Renta Fija y Crédito</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>FRED (FED St. Louis): Spreads de High Yield (US, EU, EM) actuando como proxies de CDS, y Curvas de Tipos (10Y-2Y).</p>
                         </div>
                         <div style={{ background: 'var(--surface-highlight)', padding: '20px', borderRadius: '12px' }}>
-                            <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Métricas Macro</h4>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Indicadores de liquidez global (M2) y sorpresas económicas centrales.</p>
+                            <h4 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Métricas Económicas</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>FRED: Balance de la FED (WALCL - Liquidez), Expectativas de Inflación (T5YIFR) y Crecimiento Real (CFNAI).</p>
                         </div>
                     </div>
                 </div>

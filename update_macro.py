@@ -86,6 +86,9 @@ for indicator_id, ticker in fred_tickers.items():
     except Exception as e:
         print(f"  ERROR en {indicator_id}: {e}")
 
+print(f"Columnas finales en master_df: {master_df.columns.tolist()}")
+print(f"Total filas: {len(master_df)}")
+
 # LIMPIEZA Y FORWARD-FILL
 print("Limpiando y unificando fechas...")
 master_df = master_df.sort_index()
@@ -135,6 +138,7 @@ for i in range(0, total_records, batch_size):
         print(f"Enviados {success_count} / {total_records} registros...")
     except Exception as e:
         print(f"Subida abortada en lote {i}. Error: {e}")
-        break
+        print("EL PROCESO HA FALLADO. Los datos de Supabase pueden estar incompletos.")
+        exit(1)
 
 print("¡PROCESO COMPLETADO! Todo el histórico de 25 años está ahora en Supabase.")
