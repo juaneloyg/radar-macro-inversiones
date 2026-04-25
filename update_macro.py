@@ -19,10 +19,25 @@ supabase: Client = create_client(URL, KEY)
 # --- DICCIONARIOS DE ACTIVOS ---
 # 1. Yahoo Finance (Diario)
 yf_tickers = {
+    # INDICADORES MACRO
     "vix": "^VIX",
     "dolar": "DX-Y.NYB",
     "tipos": "^TNX",
-    "move": "^MOVE"
+    "move": "^MOVE",
+    
+    # ACTIVOS DEL EXPLORADOR
+    "asset_gold": "GC=F",
+    "asset_silver": "SI=F",
+    "asset_copper": "HG=F",
+    "asset_brent": "BZ=F",
+    "asset_crude": "CL=F",
+    "asset_natgas": "NG=F",
+    "asset_wheat": "ZW=F",
+    "asset_corn": "ZC=F",
+    "asset_soy": "ZS=F",
+    "asset_btc": "BTC-USD",
+    "asset_ndx": "^NDX",
+    "asset_sp500": "^GSPC"
 }
 
 # 2. FRED St. Louis (Mezcla de diario, semanal y mensual)
@@ -85,9 +100,6 @@ for indicator_id, ticker in fred_tickers.items():
             print(f"  ADVERTENCIA: {indicator_id} no tiene datos.")
     except Exception as e:
         print(f"  ERROR en {indicator_id}: {e}")
-
-print(f"Columnas finales en master_df: {master_df.columns.tolist()}")
-print(f"Total filas: {len(master_df)}")
 
 # LIMPIEZA Y FORWARD-FILL
 print("Limpiando y unificando fechas...")
