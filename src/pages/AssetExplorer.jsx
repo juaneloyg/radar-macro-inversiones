@@ -59,7 +59,7 @@ export default function AssetExplorer() {
           .select('date, value')
           .eq('indicator_id', syncId)
           .order('date', { ascending: false })
-          .limit(3000);
+          .limit(5000);
 
         if (error) throw error;
         setDbHistory(data.sort((a, b) => new Date(a.date) - new Date(b.date)));
