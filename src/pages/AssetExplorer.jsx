@@ -56,15 +56,27 @@ export default function AssetExplorer() {
 
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('macro_history')
-          .select('date, value')
-          .eq('indicator_id', syncId)
-          .order('date', { ascending: false })
-          .limit(10000);
+        const ranges = [
+          [0, 999], [1000, 1999], [2000, 2999], [3000, 3999], [4000, 4999],
+          [5000, 5999], [6000, 6999], [7000, 7999], [8000, 8999], [9000, 9999]
+        ];
 
-        if (error) throw error;
-        setDbHistory(data.sort((a, b) => new Date(a.date) - new Date(b.date)));
+        const results = await Promise.all(ranges.map(([from, to]) =>
+          supabase
+            .from('macro_history')
+            .select('date, value')
+            .eq('indicator_id', syncId)
+            .order('date', { ascending: false })
+            .range(from, to)
+        ));
+
+        let allHist = [];
+        for (const { data, error } of results) {
+          if (error) throw error;
+          if (data) allHist = [...allHist, ...data];
+        }
+
+        setDbHistory(allHist.sort((a, b) => new Date(a.date) - new Date(b.date)));
       } catch (err) {
         console.error("Error fetching asset history:", err);
       } finally {
@@ -250,7 +262,7 @@ export default function AssetExplorer() {
                             if (activeRange.days <= 180) return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
                             return d.getFullYear();
                           }}
-                          minTickGap={30}
+                          minTickGap={60} // Mayor brecha para evitar duplicados visuales del año
                           axisLine={false}
                           tickLine={false}
                         />
